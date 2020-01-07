@@ -19,5 +19,26 @@ int main(int argc, const char * argv[]) {
     else
         std::cout << "openMetadataSession successfull" << std::endl;
 
+    
+/*
+ ensuite exemple d'une requete qui marche (POST, sur /m)
+ 
+ <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">
+ <soapenv:Header>
+       <met:SessionHeader>
+          <met:sessionId>00D3X000001teE0!AR8AQN.wQK0vVVyeyuzMj2FBjbI7k7FE3pheGjS4J.JolFSpN0jrbmYkKtOZQRzFqjGwfxtP9CHlyLaLMoXdXefS6BkaVUoo</met:sessionId>
+       </met:SessionHeader>
+    </soapenv:Header>
+    <soapenv:Body>
+       <met:readMetadata>
+          <met:type>CustomObject</met:type>
+          <met:fullName>Lead</met:fullName>
+          <met:fullNames>Account</met:fullNames>
+       </met:readMetadata>
+    </soapenv:Body>
+ </soapenv:Envelope>
+ */
+    
+    
     return 0;
 }
