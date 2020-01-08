@@ -22,9 +22,12 @@ private:
     static void processResponse(const std::string&);
 public:
     static bool firstTime;
-    static std::string body;
+    //static std::string body;
 
     static bool openMetadataSession(bool isSandbox, const std::string username, const std::string password, const std::string apiversion, const std::string securitytoken);
+    static bool describeMetadata();
+    static bool readMetadata();
+
     //
     //  accessors
     static std::string &getSessionId() {return sessionId;}

@@ -19,6 +19,16 @@ int main(int argc, const char * argv[]) {
     else
         std::cout << "openMetadataSession successfull" << std::endl;
 
+
+    
+
+    
+    
+    if (!metadataSession::describeMetadata())
+        std::cerr << "describeMetadata error" << std::endl;
+    else
+        std::cout << "describeMetadata successfull" << std::endl;
+     
     
 /*
  ensuite exemple d'une requete qui marche (POST, sur /m)
@@ -33,7 +43,6 @@ int main(int argc, const char * argv[]) {
        <met:readMetadata>
           <met:type>CustomObject</met:type>
           <met:fullName>Lead</met:fullName>
-          <met:fullNames>Account</met:fullNames>
        </met:readMetadata>
     </soapenv:Body>
  </soapenv:Envelope>
