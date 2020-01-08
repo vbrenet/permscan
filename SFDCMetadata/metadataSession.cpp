@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include "metadataSession.hpp"
+#include "rapidxml/rapidxml.hpp"
 
 std::string metadataSession::sessionId;
 std::string metadataSession::serverUrl;
@@ -281,6 +282,26 @@ bool metadataSession::describeMetadata() {
     }
     
     std::cout << "Received buffer: " << readBuffer << std::endl;
+    
+   
+    using namespace rapidxml;
+   xml_document<> document;
+    document.parse<0>((char *)readBuffer.c_str());
+    xml_node<> *node = document.first_node("soapenv:Envelope");
+    node = node->first_node("soapenv:Body");
+    node = node->first_node("describeMetadataResponse");
+    node = node->first_node("result");
+    xml_node<> * meta_node = node->first_node("metadataObjects");
+    while (meta_node){
+        xml_node<> * xml_node = meta_node->first_node("xmlName");
+        if (xml_node)
+            std::cout << "Value   is: " << xml_node->value() << "\n";
+        else
+            break;
+        meta_node = meta_node->next_sibling();
+    }
+
+    
     
     return result;
 }
