@@ -19,7 +19,7 @@ int main(int argc, const char * argv[]) {
     else
         std::cout << "openMetadataSession successfull" << std::endl;
 
-    
+    /*
     std::string thebody = "<soapenv:Body>";
     thebody += "<met:listMetadata>";
     thebody += "<met:ListMetadataQuery>";
@@ -29,6 +29,18 @@ int main(int argc, const char * argv[]) {
     thebody += "</soapenv:Body>";
 
     if (!metadataSession::call("listMetadata", thebody))
+        std::cerr << "call error" << std::endl;
+    else
+        std::cout << "call successfull" << std::endl;
+     */
+    
+    std::string thebody = "<soapenv:Body>";
+    thebody +="<met:readMetadata>";
+    thebody +="<met:type>CustomObject</met:type>";
+    thebody +="<met:fullName>Lead</met:fullName>";
+    thebody +="</met:readMetadata>";
+    thebody +="</soapenv:Body>";
+    if (!metadataSession::call("readMetadata", thebody))
         std::cerr << "call error" << std::endl;
     else
         std::cout << "call successfull" << std::endl;

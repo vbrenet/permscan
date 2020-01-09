@@ -18,16 +18,6 @@ std::string metadataSession::apiversion;
 bool metadataSession::firstTime {true};
 std::string body;
 
-//
-std::string extractXmlToken(const std::string& inputbuffer, const std::string& token) {
-    std::string endtoken = token;
-    endtoken.insert(1,1,'/');
-    
-    size_t beginpos = inputbuffer.find(token);
-    size_t endpos = inputbuffer.find(endtoken);
-    
-    return inputbuffer.substr(beginpos+token.size(),endpos-beginpos-token.size());
-}
 
 //
  size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -49,20 +39,6 @@ static size_t read_callback(void *dest, size_t size, size_t nmemb, void *userp)
         return body.size();
 }
 //
-//
-void metadataSession::processResponse(const std::string& response) {
-    std::string serverUrlToken = extractXmlToken(response, "<serverUrl>");
-    // received : https://vbrlight-dev-ed.my.salesforce.com/services/Soap/u/39.0/00D58000000ZzE0
-    // target : https://vbrlight-dev-ed.my.salesforce.com/services/async/39.0
-    size_t lastslash = serverUrlToken.find_last_of('/');
-    serverUrlToken.erase(lastslash);
-    lastslash = serverUrlToken.find_last_of('/');
-    std::string version = serverUrlToken.substr(lastslash+1);
-    size_t soap = serverUrlToken.find("/Soap");
-    serverUrl = serverUrlToken.substr(0,soap) + "/async/" + version;
-
-    sessionId = extractXmlToken(response, "<sessionId>");
-}
 
 //
 //  open a metadata session with Salesforce
