@@ -19,16 +19,27 @@ int main(int argc, const char * argv[]) {
     else
         std::cout << "openMetadataSession successfull" << std::endl;
 
+    
+    std::string thebody = "<soapenv:Body>";
+    thebody += "<met:listMetadata>";
+    thebody += "<met:ListMetadataQuery>";
+    thebody += "<met:type>ApexClass</met:type>";
+    thebody += "</met:ListMetadataQuery>";
+    thebody += "</met:listMetadata>";
+    thebody += "</soapenv:Body>";
+
+    if (!metadataSession::call("listMetadata", thebody))
+        std::cerr << "call error" << std::endl;
+    else
+        std::cout << "call successfull" << std::endl;
 
     
-
-    
-    
+/*
     if (!metadataSession::describeMetadata())
         std::cerr << "describeMetadata error" << std::endl;
     else
         std::cout << "describeMetadata successfull" << std::endl;
-     
+*/
     
 /*
  ensuite exemple d'une requete qui marche (POST, sur /m)
@@ -46,6 +57,17 @@ int main(int argc, const char * argv[]) {
        </met:readMetadata>
     </soapenv:Body>
  </soapenv:Envelope>
+ 
+ Obtention listMetadata d'un type donné (ex: ApexClass)
+ <soapenv:Body>
+ <met:listMetadata>
+ <met:ListMetadataQuery>
+ <met:type>ApexClass</met:type>
+ </met:ListMetadataQuery>
+ </met:listMetadata>
+ </soapenv:Body>
+ </soapenv:Envelope>
+
  */
     
     

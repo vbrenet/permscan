@@ -163,10 +163,25 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
     
     std::cout << "Received buffer: " << readBuffer << std::endl;
 
-    processResponse(readBuffer);
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)readBuffer.c_str());
+    xml_node<> *node = document.first_node("soapenv:Envelope");
+    node = node->first_node("soapenv:Body");
+    node = node->first_node("loginResponse");
+    node = node->first_node("result");
     
-        std::cout <<  "sessionid: " << sessionId << std::endl;
-        std::cout <<  "serverurl: " << serverUrl << std::endl;
+    xml_node<> * servernode = node->first_node("metadataServerUrl");
+    xml_node<> * sessionnode = node->first_node("sessionId");
+
+    std::string theserver (servernode->value());
+    serverUrl = theserver;
+    std::string thesession (sessionnode->value());
+    sessionId = thesession;
+
+    
+    std::cout <<  "sessionid: " << sessionId << std::endl;
+    std::cout <<  "serverurl: " << serverUrl << std::endl;
 
     return result;
 }
@@ -283,7 +298,7 @@ bool metadataSession::describeMetadata() {
     
     std::cout << "Received buffer: " << readBuffer << std::endl;
     
-   
+   /*
     using namespace rapidxml;
    xml_document<> document;
     document.parse<0>((char *)readBuffer.c_str());
@@ -301,7 +316,7 @@ bool metadataSession::describeMetadata() {
         meta_node = meta_node->next_sibling();
     }
 
-    
+    */
     
     return result;
 }
@@ -361,6 +376,99 @@ bool metadataSession::readMetadata(){
         // set header
         struct curl_slist *list = NULL;
         list = curl_slist_append(list, "SOAPAction: readMetadata");
+        list = curl_slist_append(list, "Content-Type: text/xml; charset=UTF-8");
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+        //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+        /* Now specify we want to POST data */
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+        /* we want to use our own read function */
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+        
+        /* pointer to pass to our read function */
+        curl_easy_setopt(curl, CURLOPT_READDATA, body.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(body.c_str()));
+        
+        res = curl_easy_perform(curl);
+        curl_slist_free_all(list); /* free the list  */
+
+    }
+    else
+        return false;
+    
+    if (res != CURLE_OK) {
+        std::cerr << "readMetadata : curl_easy_perform error: " << curl_easy_strerror(res) << std::endl;
+        return false;
+    }
+    
+    long http_code = 0;
+    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+    if (http_code >= 400) {
+        std::cerr << "readMetadata : http error: " << http_code << std::endl;
+        std::cout << "Received buffer: " << readBuffer << std::endl;
+
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+    
+    std::cout << "Received buffer: " << readBuffer << std::endl;
+
+    curl_easy_cleanup(curl);
+
+    return result;
+}
+//
+bool metadataSession::call(const std::string theaction, const std::string thebody)
+{
+    bool result {true};
+    
+    
+    std::stringstream ssurl;
+    ssurl << serverUrl;
+
+    std::cout << "session  url: " << ssurl.str() << std::endl;
+    
+    body = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n";
+    body += "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n";
+    body += "xmlns:met=\"http://soap.sforce.com/2006/04/metadata\">\n";
+    
+    body += "<soapenv:Header>\n";
+    body += "<met:SessionHeader>\n";
+    body += "<met:sessionId>";
+    body += sessionId;
+    body += "</met:sessionId>\n";
+    body += "</met:SessionHeader>\n";
+    body += "</soapenv:Header>\n";
+
+    body += thebody;
+    
+    body += "</soapenv:Envelope>\n";
+
+    
+    CURL *curl;
+    CURLcode res;
+    std::string readBuffer;
+
+    
+    curl = curl_easy_init();
+    
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, ssurl.str().c_str());
+        
+        std::cout << "URL: " << ssurl.str() << std::endl;
+        std::cout << "BODY size: " << strlen(body.c_str());
+        std::cout << "\nBODY: \n" << body  << std::endl;
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        
+        // set header
+        struct curl_slist *list = NULL;
+        std::string action = "SOAPAction: " + theaction;
+        list = curl_slist_append(list, action.c_str());
         list = curl_slist_append(list, "Content-Type: text/xml; charset=UTF-8");
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
