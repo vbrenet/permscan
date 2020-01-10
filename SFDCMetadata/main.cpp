@@ -36,15 +36,15 @@ int main(int argc, const char * argv[]) {
     
     std::string thebody = "<soapenv:Body>";
     thebody +="<met:readMetadata>";
-    thebody +="<met:type>CustomObject</met:type>";
-    thebody +="<met:fullName>Lead</met:fullName>";
+    thebody +="<met:type>CustomField</met:type>";
+    thebody +="<met:fullName>Lead.ProductInterest__c</met:fullName>";
     thebody +="</met:readMetadata>";
     thebody +="</soapenv:Body>";
     if (!metadataSession::call("readMetadata", thebody))
         std::cerr << "call error" << std::endl;
     else
         std::cout << "call successfull" << std::endl;
-
+     
     
 /*
     if (!metadataSession::describeMetadata())
