@@ -11,10 +11,10 @@
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    std::cout << "Hello, World!\n";
+    std::cout << "exec name : " << argv[0] << std::endl;
     
     
-    if (!metadataSession::openMetadataSession(false, "vbrenet@playful-badger-9ctmwk.com", "Smyslov1", "47.0", "UleqXE8IQfeJgI3XnSx0GkuF"))
+    if (!metadataSession::openMetadataSession(true, "vbrenet@bycn.com.vbt", "Smyslov0", "47.0", "e2bPZmdHPfxtyGg0RyDJYhmG"))
         std::cerr << "openMetadataSession error" << std::endl;
     else
         std::cout << "openMetadataSession successfull" << std::endl;
@@ -36,8 +36,9 @@ int main(int argc, const char * argv[]) {
     
     std::string thebody = "<soapenv:Body>";
     thebody +="<met:readMetadata>";
-    thebody +="<met:type>CustomField</met:type>";
-    thebody +="<met:fullName>Lead.ProductInterest__c</met:fullName>";
+    thebody +="<met:type>PermissionSet</met:type>";
+    thebody +="<met:fullName>FM_DataAccessCallCenter</met:fullName>";
+    thebody +="<met:fullName>FM_DataAdmin</met:fullName>";
     thebody +="</met:readMetadata>";
     thebody +="</soapenv:Body>";
     if (!metadataSession::call("readMetadata", thebody))
