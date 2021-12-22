@@ -8,81 +8,109 @@
 
 #include <iostream>
 #include "metadataSession.hpp"
-
+#include "Orchestrator.hpp"
+#include "expectedParameters.hpp"
+#include "ActualParameters.hpp"
+#include "globals.hpp"
+#include "config.hpp"
+//
+//
+const std::string version = "0.1.0";
+//
+//
+//
+void exitWithVersion() {
+    std::cout << "permscan version: " << version << std::endl;
+    exit(0);
+}
+//
+//
+//
+void exitWithHelp() {
+    std::cout << "SYNTAX:" << std::endl;
+    std::cout << "permscan [-v] workingDirectory" << std::endl;
+    std::cout << "permscan -help" << std::endl;
+    std::cout << "permscan -version" << std::endl << std::endl;
+    std::cout << "OPTIONS:" << std::endl;
+    std::cout << "-v : verbose mode" << std::endl;
+    std::cout << "workingDirectory (mandatory) : working directory which must contain config files" << std::endl;
+    exit(0);
+}
+//
+//
+//
+void exitWithSyntaxError() {
+    std::cerr << "Syntax error - SYNTAX : permscan [-version] [-help] [-v] workingDirectory" << std::endl;
+    exit(-1);
+}
+//
+//
+//
 int main(int argc, const char * argv[]) {
     // insert code here...
     std::cout << "exec name : " << argv[0] << std::endl;
     
+    // argument analysis
+    expectedParameters ep {
+        true,
+        1,
+        {
+            {"-v",{false,false}},
+            {"-help",{false,false}},
+            {"-version",{false,false}}
+        }
+    };
     
-    if (!metadataSession::openMetadataSession(true, "vbrenet@bycn.com.vbt", "Smyslov0", "47.0", "e2bPZmdHPfxtyGg0RyDJYhmG"))
-        std::cerr << "openMetadataSession error" << std::endl;
-    else
-        std::cout << "openMetadataSession successfull" << std::endl;
+    ActualParameters ap;
+        
+    ap.set(argc, argv, ep);
+    
+    const std::vector<NamedParameter> parameters = ap.getNamedParameters();
+    
+    for (auto curr : parameters) {
+        if (curr.getName().compare("-version") == 0)
+            exitWithVersion();
 
-    /*
-    std::string thebody = "<soapenv:Body>";
-    thebody += "<met:listMetadata>";
-    thebody += "<met:ListMetadataQuery>";
-    thebody += "<met:type>ApexClass</met:type>";
-    thebody += "</met:ListMetadataQuery>";
-    thebody += "</met:listMetadata>";
-    thebody += "</soapenv:Body>";
-
-    if (!metadataSession::call("listMetadata", thebody))
-        std::cerr << "call error" << std::endl;
-    else
-        std::cout << "call successfull" << std::endl;
-     */
+        if (curr.getName().compare("-help") == 0)
+            exitWithHelp();
+    }
     
-    std::string thebody = "<soapenv:Body>";
-    thebody +="<met:readMetadata>";
-    thebody +="<met:type>PermissionSet</met:type>";
-    thebody +="<met:fullName>FM_DataAccessCallCenter</met:fullName>";
-    thebody +="<met:fullName>FM_DataAdmin</met:fullName>";
-    thebody +="</met:readMetadata>";
-    thebody +="</soapenv:Body>";
-    if (!metadataSession::call("readMetadata", thebody))
-        std::cerr << "call error" << std::endl;
-    else
-        std::cout << "call successfull" << std::endl;
-     
+    if (!ap.areValid(ep))
+        exitWithSyntaxError();
     
+    for (auto curr : parameters) {
+        
+      if (curr.getName().compare("-v") == 0) {
+             globals::verbose = true;
+         }
+       
+     }  // end for parameters
+    
+    
+    const std::vector<std::string> values = ap.getValues();
+    if (values.size() != 1) {
+        std::cerr << "Missing parameter : workingDirectory" << std::endl;
+        exitWithSyntaxError();
+    }
+    
+    globals::workingDirectory = values[0];
+    
+    // lecture fichier de config
+    if (!config::getConfig(globals::workingDirectory + "/config")) {
+        std::cerr << "config file not found or empty" << std::endl;
+        exitWithSyntaxError();
+    }
 /*
-    if (!metadataSession::describeMetadata())
-        std::cerr << "describeMetadata error" << std::endl;
+    if (!config::checkConfig())
+        exit(-1);
+  */
+    orchestrator theOrchestrator {};
+    
+    if (!theOrchestrator.run()) {
+        std::cerr << "run failure" << std::endl;
+    }
     else
-        std::cout << "describeMetadata successfull" << std::endl;
-*/
-    
-/*
- ensuite exemple d'une requete qui marche (POST, sur /m)
- 
- <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">
- <soapenv:Header>
-       <met:SessionHeader>
-          <met:sessionId>00D3X000001teE0!AR8AQN.wQK0vVVyeyuzMj2FBjbI7k7FE3pheGjS4J.JolFSpN0jrbmYkKtOZQRzFqjGwfxtP9CHlyLaLMoXdXefS6BkaVUoo</met:sessionId>
-       </met:SessionHeader>
-    </soapenv:Header>
-    <soapenv:Body>
-       <met:readMetadata>
-          <met:type>CustomObject</met:type>
-          <met:fullName>Lead</met:fullName>
-       </met:readMetadata>
-    </soapenv:Body>
- </soapenv:Envelope>
- 
- Obtention listMetadata d'un type donné (ex: ApexClass)
- <soapenv:Body>
- <met:listMetadata>
- <met:ListMetadataQuery>
- <met:type>ApexClass</met:type>
- </met:ListMetadataQuery>
- </met:listMetadata>
- </soapenv:Body>
- </soapenv:Envelope>
-
- */
-    
+        std::cout << "run successfull" << std::endl;
     
     return 0;
 }

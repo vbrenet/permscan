@@ -397,7 +397,7 @@ bool metadataSession::readMetadata(){
     return result;
 }
 //
-bool metadataSession::call(const std::string theaction, const std::string thebody)
+bool metadataSession::call(const std::string theaction, const std::string thebody, std::string& readBuffer)
 {
     bool result {true};
     
@@ -426,7 +426,7 @@ bool metadataSession::call(const std::string theaction, const std::string thebod
     
     CURL *curl;
     CURLcode res;
-    std::string readBuffer;
+    //std::string readBuffer;
 
     
     curl = curl_easy_init();
@@ -483,7 +483,7 @@ bool metadataSession::call(const std::string theaction, const std::string thebod
         return false;
     }
     
-    std::cout << "Received buffer: " << readBuffer << std::endl;
+    //std::cout << "Received buffer: " << readBuffer << std::endl;
 
     curl_easy_cleanup(curl);
 
