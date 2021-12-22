@@ -10,6 +10,7 @@
 #include <sstream>
 #include "metadataSession.hpp"
 #include "rapidxml/rapidxml.hpp"
+#include "utils.hpp"
 
 std::string metadataSession::sessionId;
 std::string metadataSession::serverUrl;
@@ -20,11 +21,13 @@ std::string body;
 
 
 //
+/*  already defined in utils.cpp
  size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
    ((std::string*)userp)->append((char*)contents, size * nmemb);
     return size * nmemb;
 }
+ */
 //
 
 

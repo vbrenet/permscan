@@ -18,7 +18,11 @@
 class config {
 
 private:
-    enum class token  { USERNAME,
+    enum class token  {
+                        TOKENDOM,
+                        CLIENTID,
+                        CLIENTSECRET,
+                        USERNAME,
                         PASSWORD,
                         ISPROD,
                         APIVERSION,
@@ -29,6 +33,9 @@ private:
         std::string literal;
     };
     static const std::vector<tokenDesc> tokenDescriptions;
+    static std::string clientid;        // REST connected app
+    static std::string clientsecret;    // REST connected app secret
+    static std::string domain;
     static std::string username;
     static std::string password;
     static std::string securitytoken;
@@ -48,6 +55,9 @@ public:
     //
     //  config accessors
     //
+    static std::string& getClientId() {return clientid;};
+    static std::string& getClientSecret() {return clientsecret;};
+    static std::string& getDomain() {return domain;};
     static std::string& getUsername() {return username;};
     static std::string& getPassword() {return password;};
     static std::string& getSecurityToken() {return securitytoken;};

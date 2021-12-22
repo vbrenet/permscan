@@ -11,10 +11,14 @@
 
 #include <stdio.h>
 #include <string>
+#include <map>
+#include "permissionSet.hpp"
 
 class orchestrator {
 private:
-    
+    std::map<std::string,permissionSet> permissionSetMap;
+    void initializePermissionsSet(const std::string& xmlBuffer);
+    void addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer);
 public:
     bool run();
 };
