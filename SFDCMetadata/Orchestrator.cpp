@@ -17,12 +17,60 @@
 //
 //
 //
+void orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::string& xmlBuffer) {
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * sizenode = node->first_node("totalSize");
+    int totalsize = std::stoi( sizenode->value() );
+    std::cout << "updateUsersWithPermissionSetId size = " << totalsize << std::endl;
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string assigneeid {};
+    
+       xml_node<> * objectnode = child->first_node("AssigneeId");
+       if (objectnode) {
+           assigneeid = objectnode->value();
+           addPermissionSetObjectsToUser(psid,assigneeid);
+       }
+   }
+}
+//
+//
+//
+void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string assigneeid) {
+    auto theUser = userMap.find(assigneeid);
+    auto thePS = permissionSetMap.find(psid);
+    
+    if (theUser == userMap.end()) {
+        if (globals::verbose)
+            std::cout << "addPermissionSetObjectsToUser: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
+        return;
+    }
+
+    if (thePS == permissionSetMap.end()) {
+        std::cerr << "addPermissionSetObjectsToUser: permission set not found in permission set map, id =" << psid << std::endl;
+        return;
+    }
+
+    auto theset = thePS->second.getobjects();
+    for (auto itset = theset.begin(); itset != theset.end(); ++itset)
+        theUser->second.insertPermittedObject(*itset);
+}
+//
+//
+//
 void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer) {
     
     auto it = permissionSetMap.find(id);
     
     if (it == permissionSetMap.end()) {
-        std::cerr << "addObjectsToPermissionSet id not found in Map " << id << std::endl;
+        std::cerr << "addObjectsToPermissionSet: id not found in Map " << id << std::endl;
         return;
     }
     
@@ -80,6 +128,77 @@ void orchestrator::initializePermissionsSet(const std::string& xmlBuffer) {
 //
 //
 //
+bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& nextUrl) {
+    bool moretoread {false};
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * sizenode = node->first_node("totalSize");
+    std::cout << "Total number of active users from query : " << sizenode->value() << std::endl;
+    
+    xml_node<> * nexturl = node->first_node("nextRecordsUrl");
+    if (nexturl) {
+        std::cout << "nextRecordsUrl : " << nexturl->value() << std::endl;
+        std::string url = nexturl->value();
+        
+        // extract url
+        size_t beginindex = url.find("query/");
+            
+        nextUrl = url.substr(beginindex+6);
+        std::cout << "url " << nextUrl << std::endl;
+        
+        moretoread = true;
+    }
+    
+    xml_node<> * servernode = node->first_node("records");
+
+    int nbinsert {0};
+    for (xml_node<> *child = servernode; child; child = child->next_sibling())
+    {
+        std::string id {};
+        std::string username {};
+        std::string firstname {};
+        std::string lastname {};
+
+        xml_node<> * objectnode = child->first_node("Id");
+        if (objectnode) {
+            id = objectnode->value();
+        }
+        
+        xml_node<> * usernamenode = child->first_node("Username");
+        if (usernamenode) {
+            username = usernamenode->value();
+        }
+
+        xml_node<> * firstnamenode = child->first_node("FirstName");
+        if (firstnamenode) {
+           firstname = firstnamenode->value();
+        }
+
+        xml_node<> * lastnamenode = child->first_node("LastName");
+        if (lastnamenode) {
+           lastname = lastnamenode->value();
+        }
+        
+        if (objectnode) {
+           if (userMap.find(id) != userMap.end()) {
+               std::cerr << "id already exist in user map " << child->value() << std::endl;
+               break;
+           }
+           userMap.insert ( std::pair<std::string,salesforceUser>(id, {id, firstname, lastname, username}) );
+           nbinsert++;
+        }
+        
+    }
+    std::cout << "number insertions : " << nbinsert << std::endl;
+    
+    return  moretoread;
+}
+//
+//
+//
 bool orchestrator::run() {
     
     //  open REST session
@@ -118,9 +237,12 @@ bool orchestrator::run() {
     }
         
     // iterate on permissionSet map
-    std::cout << std::endl << "Analyzing permissions set metadata...";
-    
+    std::cout << std::endl << "Analyzing permissions set metadata..." << std::endl;
+
+    int i {0};
     for (auto it : permissionSetMap) {
+        i++;
+        std::cout << "\r" << i << " of " << permissionSetMap.size() << std::flush;
         std::string result;
         std::string thebody = "<soapenv:Body>";
         thebody +="<met:readMetadata>";
@@ -138,6 +260,31 @@ bool orchestrator::run() {
 
     std::cout << std::endl;
     
+    // read users
+    std::cout << "Reading active users ..." << std::endl;
+    restQuery("?q=SELECT+ID+,+Username+,+Firstname+,+Lastname+FROM+User+where+isactive+=+true", readBuffer);
+    
+    std::string nexturl {};
+    
+    bool nextRecordsToRead = initializeUsers(readBuffer, nexturl);
+    
+    while (nextRecordsToRead) {
+        if (restQuery(nexturl, readBuffer))
+            nextRecordsToRead = initializeUsers(readBuffer, nexturl);
+        else
+            break;
+    }
+    
+    std::cout << "Nb active users : " << userMap.size() << std::endl;
+    
+    // read permission set assignments
+    std::cout << "Reading permission set assignments ..." << std::endl;
+    for (auto it : permissionSetMap) {
+        std::cout << it.second.getName() << " ..." << std::endl;
+        restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetAssignment+where+PermissionSetId+=+'" + it.first + "'", readBuffer);
+        updateUsersWithPermissionSetId (it.first, readBuffer);
+    }
+    
     // iterate on permissionSet map and print objects
     for (auto it : permissionSetMap) {
         std::cout << "Permission set name : " << it.second.getName() << std::endl;
@@ -145,8 +292,16 @@ bool orchestrator::run() {
         for (auto itset = theset.begin(); itset != theset.end(); ++itset)
             std::cout << *itset << " ";
         std::cout << std::endl;
-        
     }
     
+    // iterate on user map and print objects
+    for (auto it : userMap) {
+        std::cout << "User : " << it.second.getUsername() << std::endl;
+        auto theset = it.second.getPermittedObjects();
+        for (auto itset = theset.begin(); itset != theset.end(); ++itset)
+            std::cout << *itset << " ";
+        std::cout << std::endl;
+    }
+
     return true;
 }

@@ -146,6 +146,7 @@ bool restQuery(const std::string& query, std::string& readBuffer) {
         curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
         if (http_code >= 400) {
             std::cerr << "restQuery : http error: " << http_code << std::endl;
+            std::cerr << "URL : " << "https://" + SalesforceSession::getDomain() + "/services/data/v" + config::getApiVersion() + "/query/" + query << std::endl;
             return false;
         }
 
