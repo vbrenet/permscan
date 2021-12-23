@@ -25,8 +25,6 @@ public:
     //static std::string body;
 
     static bool openMetadataSession(bool isSandbox, const std::string username, const std::string password, const std::string apiversion, const std::string securitytoken);
-    static bool describeMetadata();
-    static bool readMetadata();
     static bool call(const std::string action, const std::string body, std::string& readBuffer);
 
     //
