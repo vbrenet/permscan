@@ -14,16 +14,20 @@
 #include <map>
 #include "permissionSet.hpp"
 #include "salesforceUser.hpp"
+#include "profile.hpp"
 
 class orchestrator {
 private:
     std::map<std::string,permissionSet> permissionSetMap;
+    std::map<std::string,profile> profileMap;
     std::map<std::string,salesforceUser> userMap;
     
     void initializePermissionsSet(const std::string& xmlBuffer);
+    void initializeProfiles(const std::string& xmlBuffer);
     bool initializeUsers(const std::string& xmlBuffer, std::string& nextUrl);
     void addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer);
-    void updateUsersWithPermissionSetId (std::string id, const std::string& xmlBuffer);
+    void addObjectsToProfile(std::string id, const std::string& xmlBuffer);
+    bool updateUsersWithPermissionSetId (std::string id, const std::string& xmlBuffer, std::string& nextUrl);
     void addPermissionSetObjectsToUser(std::string psid, std::string assigneeid);
 public:
     bool run();
