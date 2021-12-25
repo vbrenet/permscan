@@ -23,4 +23,6 @@ std::string extractXmlToken(const std::string& inputbuffer, const std::string& t
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 bool restQuery(const std::string& query, std::string& result);
 std::string getFrenchDate(const std::string input);
+bool endsWith(const std::string &mainStr, const std::string &toMatch);
+std::string objectNamePrefix (const std::string &objectName);
 #endif /* utils_hpp */

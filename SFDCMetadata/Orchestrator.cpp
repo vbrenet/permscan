@@ -428,7 +428,7 @@ bool orchestrator::run() {
     std::cout << "Reading permission set assignments ..." << std::endl;
     
     for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it) {
-        std::cout << it->second.getName() << " ..." << std::endl;
+        //std::cout << it->second.getName() << " ..." << std::endl;
         if (!restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetAssignment+where+PermissionSetId+=+'" + it->first + "'", readBuffer)) {
             std::cerr << "PermissionSetAssignment query error" << std::endl;
             return false;
@@ -467,18 +467,23 @@ bool orchestrator::run() {
     // iterate on user map and print objects
 
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
-        std::cout << "User : " << it->second.getUsername() << std::endl;
-        std::string theprofile = it->second.getProfile();
-        auto prfit = profileMap.find(theprofile);
-        if (prfit != profileMap.end()) {
-            std::cout << "Profile : " << prfit->second.getName() << std::endl;
-        }
-        auto theset = it->second.getPermittedObjects();
-        std::cout << "Set size " << it->second.getPermittedObjects().size() << std::endl;
-        for (auto itset = theset.begin(); itset != theset.end(); ++itset)
-            std::cout << *itset << " ";
-        std::cout << std::endl;
+        it->second.distributeObjects();
     }
+
+    for (auto it = userMap.begin(); it != userMap.end(); ++it) {
+        std::cout << std::endl;
+        it->second.print();
+    }
+
+    std::cout << std::endl << "*** Users with more than 10 custom objects :" << std::endl;
+    int u {0};
+    for (auto it = userMap.begin(); it != userMap.end(); ++it) {
+        if (it->second.nbCustomObjects() > 10) {
+            u++;
+            std::cout << it->second.getFullName() << std::endl;
+        }
+    }
+    std::cout << "*** total active users with more than 10 custom objects : " << u << std::endl;
 
     return true;
 }

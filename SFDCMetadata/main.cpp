@@ -13,6 +13,7 @@
 #include "ActualParameters.hpp"
 #include "globals.hpp"
 #include "config.hpp"
+#include "utils.hpp"
 //
 //
 const std::string version = "0.1.0";

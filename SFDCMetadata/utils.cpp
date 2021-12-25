@@ -176,3 +176,34 @@ std::string getFrenchDate(const std::string input) {
     
     return target.str();
 }
+//
+//
+//
+bool endsWith(const std::string &mainStr, const std::string &toMatch)
+{
+    if(mainStr.size() >= toMatch.size() &&
+            mainStr.compare(mainStr.size() - toMatch.size(), toMatch.size(), toMatch) == 0)
+            return true;
+        else
+            return false;
+}
+//
+//
+//
+std::string objectNamePrefix (const std::string &objectName) {
+    std::string prefix {};
+    
+    std::size_t index = objectName.find("__");
+    if (index != std::string::npos) {
+        // check that it is not the trailing __c
+        std::size_t trailing = objectName.find("__c", index+2);
+        if (trailing == std::string::npos) {
+            // it was the trailing __c, so there is no prefix
+        }
+        else {
+            prefix = objectName.substr(0,index);
+        }
+    }
+    
+    return prefix;
+}
