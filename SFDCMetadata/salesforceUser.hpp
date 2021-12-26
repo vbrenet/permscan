@@ -13,6 +13,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include "permissionSetLicense.hpp"
 
 class salesforceUser {
 private:
@@ -22,6 +23,8 @@ private:
     std::string lastname;
     std::string profileid;
     std::string profilename;
+    std::string licencename;
+    std::vector<permissionSetLicense> permissionSetLicences;
     std::set<std::string> allPermittedObjects;
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
@@ -35,12 +38,14 @@ public:
     const std::string getUsername() const {return username;}
     const std::string getProfile() const {return profileid;}
     const std::string getProfileName() const {return profilename;}
+    const std::string getLicenseName() const {return licencename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
     const long nbCustomObjects() {return customobjects.size();}
     const long nbPackagedObjects() {return packagedobjects.size();}
     const long nbStandardObjects() {return standardobjects.size();}
     //
     void setProfileName(const std::string name) {profilename=name;}
+    void setLicenceName(const std::string name) {licencename=name;}
     void insertPermittedObject(const std::string o) {allPermittedObjects.insert(o);}
     //
     void distributeObjects();

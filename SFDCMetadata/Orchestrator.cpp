@@ -26,7 +26,7 @@ bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::
     
     xml_node<> * nexturl = node->first_node("nextRecordsUrl");
     if (nexturl) {
-        std::cout << "updateUsersWithPermissionSetId : nextRecordsUrl : " << nexturl->value() << std::endl;
+        //std::cout << "updateUsersWithPermissionSetId : nextRecordsUrl : " << nexturl->value() << std::endl;
         std::string url = nexturl->value();
         
         // extract url
@@ -215,9 +215,9 @@ void orchestrator::initializeProfiles(const std::string& xmlBuffer) {
        if (namenode) {
            name = namenode->value();
        }
-       xml_node<> * licencenode = child->first_node("UserLicenceId");
+       xml_node<> * licencenode = child->first_node("UserLicenseId");
        if (licencenode) {
-           name = licencenode->value();
+           licenceid = licencenode->value();
        }
        if (namenode && objectnode) {
            profileMap.insert ( std::pair<std::string,profile>(id, {id, name, licenceid}) );
@@ -272,6 +272,50 @@ void orchestrator::initializeLicenses(const std::string& xmlBuffer) {
 //
 //
 //
+void orchestrator::initializePermissionSetLicenses(const std::string& xmlBuffer) {
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string id {};
+       std::string name {};
+       std::string status {};
+       std::string total {};
+       std::string used {};
+
+       xml_node<> * objectnode = child->first_node("Id");
+       if (objectnode) {
+           id = objectnode->value();
+       }
+       xml_node<> * namenode = child->first_node("DeveloperName");
+       if (namenode) {
+           name = namenode->value();
+       }
+       xml_node<> * statusnode = child->first_node("Status");
+       if (statusnode) {
+           status = statusnode->value();
+       }
+       xml_node<> * totalnode = child->first_node("TotalLicenses");
+       if (statusnode) {
+           total = totalnode->value();
+       }
+       xml_node<> * usednode = child->first_node("UsedLicenses");
+       if (statusnode) {
+           used = usednode->value();
+       }
+
+       if (namenode && objectnode) {
+           permissionSetLicenseMap.insert ( std::pair<std::string,permissionSetLicense>(id, {id, name, status, std::stoi(total), std::stoi(used)}) );
+       }
+   }
+}//
+//
+//
 void orchestrator::initializePermissionsSet(const std::string& xmlBuffer) {
     using namespace rapidxml;
     xml_document<> document;
@@ -314,14 +358,14 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
     
     xml_node<> * nexturl = node->first_node("nextRecordsUrl");
     if (nexturl) {
-        std::cout << "nextRecordsUrl : " << nexturl->value() << std::endl;
+        //std::cout << "nextRecordsUrl : " << nexturl->value() << std::endl;
         std::string url = nexturl->value();
         
         // extract url
         size_t beginindex = url.find("query/");
             
         nextUrl = url.substr(beginindex+6);
-        std::cout << "url " << nextUrl << std::endl;
+        //std::cout << "url " << nextUrl << std::endl;
         
         moretoread = true;
     }
@@ -435,9 +479,27 @@ bool orchestrator::run() {
     initializeLicenses(readBuffer);
     std::cout << std::endl << licenseMap.size() << " licenses inserted";
 
+    std::cout << std::endl;
     for (auto it=licenseMap.begin(); it != licenseMap.end(); ++it)
         std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
     
+    // read permission set license table
+    std::cout << std::endl << "Reading permission set licences ...";
+    
+    restQuery("?q=SELECT+ID+,+DeveloperName+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+PermissionSetLicense", readBuffer);
+
+    if (globals::verbose) {
+        std::cout << "permission set license query: " << std::endl;
+        std::cout << readBuffer << std::endl;
+    }
+    
+    initializePermissionSetLicenses(readBuffer);
+    std::cout << std::endl << permissionSetLicenseMap.size() << " permission set licenses inserted";
+
+    std::cout << std::endl;
+    for (auto it=permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it)
+        std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+
     // open metadatasession
     //
     if (!metadataSession::openMetadataSession(config::isSandbox(), config::getUsername(), config::getPassword(), config::getApiVersion(), config::getSecurityToken())) {
@@ -512,10 +574,11 @@ bool orchestrator::run() {
     
     std::cout << "Nb active users : " << userMap.size() << std::endl;
     
-    // add objects from profiles to users
+    // add objects from profiles to users, and main license
     std::cout << "Assigning objects to users from profiles ..." << std::endl;
-    int k {0};
+
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
+        // profile analysis
         std::string theprofile = it->second.getProfile();
         auto prfit = profileMap.find(theprofile);
         if (prfit != profileMap.end()) {
@@ -524,15 +587,21 @@ bool orchestrator::run() {
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 //std::cout << "to insert " << *itset << std::endl;
                 it->second.insertPermittedObject(*itset);
-                k++;
+            }
+        // license
+            std::string licenseid = prfit->second.getLicenceId();
+            auto licenseit = licenseMap.find(licenseid);
+            if (licenseit != licenseMap.end()) {
+                it->second.setLicenceName(licenseit->second.getName());
+            }
+            else {
+                std::cerr << "License " << licenseid << " not found in the map for user " << it->second.getFullName() << " userid: " << it->second.getId() << std::endl;
             }
         }
         else {
             std::cerr << "Profile " << theprofile << " not found in the map for user " << it->second.getFullName() << " userid: " << it->second.getId() << std::endl;
         }
-        //std::cout << "User : " << it->second.getFullName() << " set size " << it->second.getPermittedObjects().size() << std::endl;
-    }
-    //std::cout << "Total number of objects added to users : " << k << std::endl;
+    } // end for users
     
     // read permission set assignments
     std::cout << "Reading permission set assignments ..." << std::endl;
