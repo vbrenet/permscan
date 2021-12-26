@@ -20,24 +20,27 @@ private:
     std::string id;
     std::string firstname;
     std::string lastname;
-    std::string theprofile;
+    std::string profileid;
+    std::string profilename;
     std::set<std::string> allPermittedObjects;
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
     std::vector<std::string> standardobjects;
 
 public:
-    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, theprofile {p} {}
+    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
     const std::string getId() const {return id;}
     const std::string getUsername() const {return username;}
-    const std::string getProfile() const {return theprofile;}
+    const std::string getProfile() const {return profileid;}
+    const std::string getProfileName() const {return profilename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
     const long nbCustomObjects() {return customobjects.size();}
     const long nbPackagedObjects() {return packagedobjects.size();}
     const long nbStandardObjects() {return standardobjects.size();}
     //
+    void setProfileName(const std::string name) {profilename=name;}
     void insertPermittedObject(const std::string o) {allPermittedObjects.insert(o);}
     //
     void distributeObjects();

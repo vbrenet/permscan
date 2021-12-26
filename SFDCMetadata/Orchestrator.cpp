@@ -103,14 +103,38 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
 
    for (xml_node<> *child = servernode; child; child = child->next_sibling())
    {
+       xml_node<> * allowCreate = child->first_node("allowCreate");
+       xml_node<> * allowDelete = child->first_node("allowDelete");
+       xml_node<> * allowEdit = child->first_node("allowEdit");
+       xml_node<> * allowRead = child->first_node("allowRead");
+       xml_node<> * modifyAllRecords = child->first_node("modifyAllRecords");
+       xml_node<> * viewAllRecords = child->first_node("viewAllRecords");
+
+       std::vector<bool> permissions {};
+       if (allowCreate) permissions.push_back(getBooleanValue(allowCreate->value()));
+       if (allowDelete) permissions.push_back(getBooleanValue(allowDelete->value()));
+       if (allowEdit) permissions.push_back(getBooleanValue(allowEdit->value()));
+       if (allowRead) permissions.push_back(getBooleanValue(allowRead->value()));
+       if (modifyAllRecords) permissions.push_back(getBooleanValue(modifyAllRecords->value()));
+       if (viewAllRecords) permissions.push_back(getBooleanValue(viewAllRecords->value()));
+
        xml_node<> * objectnode = child->first_node("object");
        if (objectnode) {
-           if (globals::verbose)
-               std::cout <<  "object: " << objectnode->value() << std::endl;
-           it->second.insertObject(objectnode->value());
+           bool atleastone {false};
+           for (auto itbool = permissions.begin(); itbool != permissions.end(); ++itbool) {
+               if (*itbool) {
+                   atleastone = true;
+                   it->second.insertObject(objectnode->value());
+                   break;
+               }
+           }
+           if (!atleastone) {
+               std::cout << "Profile id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
+           }
        }
-   }
-}//
+   }    // end for objectpermissions
+}
+//
 //
 //
 void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer) {
@@ -135,11 +159,35 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
 
    for (xml_node<> *child = servernode; child; child = child->next_sibling())
    {
+       xml_node<> * allowCreate = child->first_node("allowCreate");
+       xml_node<> * allowDelete = child->first_node("allowDelete");
+       xml_node<> * allowEdit = child->first_node("allowEdit");
+       xml_node<> * allowRead = child->first_node("allowRead");
+       xml_node<> * modifyAllRecords = child->first_node("modifyAllRecords");
+       xml_node<> * viewAllRecords = child->first_node("viewAllRecords");
+
+       std::vector<bool> permissions {};
+       if (allowCreate) permissions.push_back(getBooleanValue(allowCreate->value()));
+       if (allowDelete) permissions.push_back(getBooleanValue(allowDelete->value()));
+       if (allowEdit) permissions.push_back(getBooleanValue(allowEdit->value()));
+       if (allowRead) permissions.push_back(getBooleanValue(allowRead->value()));
+       if (modifyAllRecords) permissions.push_back(getBooleanValue(modifyAllRecords->value()));
+       if (viewAllRecords) permissions.push_back(getBooleanValue(viewAllRecords->value()));
+
        xml_node<> * objectnode = child->first_node("object");
+
        if (objectnode) {
-           if (globals::verbose)
-               std::cout <<  "object: " << objectnode->value() << std::endl;
-           it->second.insertObject(objectnode->value());
+           bool atleastone {false};
+           for (auto itbool = permissions.begin(); itbool != permissions.end(); ++itbool) {
+               if (*itbool) {
+                   atleastone = true;
+                   it->second.insertObject(objectnode->value());
+                   break;
+               }
+           }
+           if (!atleastone) {
+               std::cout << "Permission set id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
+           }
        }
    }
 }
@@ -173,6 +221,51 @@ void orchestrator::initializeProfiles(const std::string& xmlBuffer) {
        }
        if (namenode && objectnode) {
            profileMap.insert ( std::pair<std::string,profile>(id, {id, name, licenceid}) );
+       }
+   }
+}
+//
+//
+//
+void orchestrator::initializeLicenses(const std::string& xmlBuffer) {
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string id {};
+       std::string name {};
+       std::string status {};
+       std::string total {};
+       std::string used {};
+
+       xml_node<> * objectnode = child->first_node("Id");
+       if (objectnode) {
+           id = objectnode->value();
+       }
+       xml_node<> * namenode = child->first_node("Name");
+       if (namenode) {
+           name = namenode->value();
+       }
+       xml_node<> * statusnode = child->first_node("Status");
+       if (statusnode) {
+           status = statusnode->value();
+       }
+       xml_node<> * totalnode = child->first_node("TotalLicenses");
+       if (statusnode) {
+           total = totalnode->value();
+       }
+       xml_node<> * usednode = child->first_node("UsedLicenses");
+       if (statusnode) {
+           used = usednode->value();
+       }
+
+       if (namenode && objectnode) {
+           licenseMap.insert ( std::pair<std::string,license>(id, {id, name, status, std::stoi(total), std::stoi(used)}) );
        }
    }
 }
@@ -329,6 +422,22 @@ bool orchestrator::run() {
     initializeProfiles(readBuffer);
     std::cout << std::endl << profileMap.size() << " profiles inserted";
     
+    // read licenses
+    std::cout << std::endl << "Reading licences ...";
+    
+    restQuery("?q=SELECT+ID+,+Name+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+UserLicense", readBuffer);
+
+    if (globals::verbose) {
+        std::cout << "License query: " << std::endl;
+        std::cout << readBuffer << std::endl;
+    }
+    
+    initializeLicenses(readBuffer);
+    std::cout << std::endl << licenseMap.size() << " licenses inserted";
+
+    for (auto it=licenseMap.begin(); it != licenseMap.end(); ++it)
+        std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+    
     // open metadatasession
     //
     if (!metadataSession::openMetadataSession(config::isSandbox(), config::getUsername(), config::getPassword(), config::getApiVersion(), config::getSecurityToken())) {
@@ -410,6 +519,7 @@ bool orchestrator::run() {
         std::string theprofile = it->second.getProfile();
         auto prfit = profileMap.find(theprofile);
         if (prfit != profileMap.end()) {
+            it->second.setProfileName(prfit->second.getName());
             auto theset = prfit->second.getobjects();
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 //std::cout << "to insert " << *itset << std::endl;

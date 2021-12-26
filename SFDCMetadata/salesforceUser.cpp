@@ -29,7 +29,7 @@ void salesforceUser::distributeObjects() {
 //
 //
 void salesforceUser::print() {
-    std::cout << id << ": " << username << " -profile: " << theprofile << std::endl;
+    std::cout << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << std::endl;
     std::cout << "Total objects : " << allPermittedObjects.size() << std::endl;
     std::cout << "Custom objects : " << customobjects.size() << std::endl;
     for (auto it = customobjects.begin(); it != customobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
