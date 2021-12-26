@@ -17,6 +17,43 @@
 //
 //
 //
+bool orchestrator::updateUsersWithPermissionSetLicenseId (std::string pslid, const std::string& xmlBuffer, std::string& nextUrl) {
+    bool moretoread {false};
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * nexturl = node->first_node("nextRecordsUrl");
+    if (nexturl) {
+        std::string url = nexturl->value();
+        
+        // extract url
+        size_t beginindex = url.find("query/");
+            
+        nextUrl = url.substr(beginindex+6);
+        
+        moretoread = true;
+    }
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string assigneeid {};
+    
+       xml_node<> * objectnode = child->first_node("AssigneeId");
+       if (objectnode) {
+           assigneeid = objectnode->value();
+           addPermissionSetLicenseObjectsToUser(pslid,assigneeid);
+       }
+   }
+    
+return  moretoread;
+}
+//
+//
+//
 bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::string& xmlBuffer, std::string& nextUrl) {
     bool moretoread {false};
     using namespace rapidxml;
@@ -37,10 +74,6 @@ bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::
         moretoread = true;
     }
     
-    //xml_node<> * sizenode = node->first_node("totalSize");
-    //int totalsize = std::stoi( sizenode->value() );
-    //std::cout << "updateUsersWithPermissionSetId size = " << totalsize << std::endl;
-    
     xml_node<> * servernode = node->first_node("records");
 
    for (xml_node<> *child = servernode; child; child = child->next_sibling())
@@ -55,6 +88,26 @@ bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::
    }
     
 return  moretoread;
+}
+//
+//
+//
+void orchestrator::addPermissionSetLicenseObjectsToUser(std::string pslid, std::string assigneeid) {
+    auto theUser = userMap.find(assigneeid);
+    auto thePS = permissionSetLicenseMap.find(pslid);
+    
+    if (theUser == userMap.end()) {
+        if (globals::verbose)
+            std::cout << "addPermissionSetLicenseObjectsToUser: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
+        return;
+    }
+
+    if (thePS == permissionSetLicenseMap.end()) {
+        std::cerr << "addPermissionSetLicenseObjectsToUser: permission set not found in permission set map, id =" << pslid << std::endl;
+        return;
+    }
+
+    theUser->second.insertPermissionSetLicense(thePS->second.getLabel());
 }
 //
 //
@@ -129,7 +182,8 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
                }
            }
            if (!atleastone) {
-               std::cout << "Profile id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
+               if (globals::verbose)
+                   std::cout << "Profile id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
            }
        }
    }    // end for objectpermissions
@@ -186,7 +240,8 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
                }
            }
            if (!atleastone) {
-               std::cout << "Permission set id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
+               if (globals::verbose)
+                   std::cout << "Permission set id: " << id << " all " << objectnode->value() << " permissions are false" << std::endl;
            }
        }
    }
@@ -284,6 +339,7 @@ void orchestrator::initializePermissionSetLicenses(const std::string& xmlBuffer)
    {
        std::string id {};
        std::string name {};
+       std::string label {};
        std::string status {};
        std::string total {};
        std::string used {};
@@ -296,7 +352,11 @@ void orchestrator::initializePermissionSetLicenses(const std::string& xmlBuffer)
        if (namenode) {
            name = namenode->value();
        }
-       xml_node<> * statusnode = child->first_node("Status");
+       xml_node<> * labelnode = child->first_node("MasterLabel");
+       if (labelnode) {
+           label = labelnode->value();
+       }
+      xml_node<> * statusnode = child->first_node("Status");
        if (statusnode) {
            status = statusnode->value();
        }
@@ -310,7 +370,7 @@ void orchestrator::initializePermissionSetLicenses(const std::string& xmlBuffer)
        }
 
        if (namenode && objectnode) {
-           permissionSetLicenseMap.insert ( std::pair<std::string,permissionSetLicense>(id, {id, name, status, std::stoi(total), std::stoi(used)}) );
+           permissionSetLicenseMap.insert ( std::pair<std::string,permissionSetLicense>(id, {id, name, label, status, std::stoi(total), std::stoi(used)}) );
        }
    }
 }//
@@ -592,7 +652,7 @@ bool orchestrator::run() {
             std::string licenseid = prfit->second.getLicenceId();
             auto licenseit = licenseMap.find(licenseid);
             if (licenseit != licenseMap.end()) {
-                it->second.setLicenceName(licenseit->second.getName());
+                it->second.setLicenseName(licenseit->second.getName());
             }
             else {
                 std::cerr << "License " << licenseid << " not found in the map for user " << it->second.getFullName() << " userid: " << it->second.getId() << std::endl;
@@ -623,6 +683,27 @@ bool orchestrator::run() {
             }
         }
     }
+    
+    // read permission set license assignments
+    std::cout << "Reading permission set license assignments ..." << std::endl;
+    
+    for (auto it = permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it) {
+        if (!restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetLicenseAssign+where+PermissionSetLicenseId+=+'" + it->first + "'", readBuffer)) {
+            std::cerr << "PermissionSetLicenseAssign query error" << std::endl;
+            return false;
+        }
+        
+        nextRecordsToRead = updateUsersWithPermissionSetLicenseId (it->first, readBuffer, nexturl);
+        while (nextRecordsToRead) {
+            if (restQuery(nexturl, readBuffer))
+                nextRecordsToRead = updateUsersWithPermissionSetLicenseId (it->first, readBuffer, nexturl);
+            else {
+                std::cerr << "PermissionSetLicenseAssign query error" << std::endl;
+                return false;
+            }
+        }
+    }
+    
     
     // if verbose iterate on profiles and permissionSet map and print objects
     if (globals::verbose) {

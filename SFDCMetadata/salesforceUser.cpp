@@ -29,7 +29,9 @@ void salesforceUser::distributeObjects() {
 //
 //
 void salesforceUser::print() {
-    std::cout << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licencename << std::endl;
+    std::cout << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
+    std::cout << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
+    for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
     std::cout << "Total objects : " << allPermittedObjects.size() << std::endl;
     std::cout << "Custom objects : " << customobjects.size() << std::endl;
     for (auto it = customobjects.begin(); it != customobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
@@ -38,4 +40,3 @@ void salesforceUser::print() {
     std::cout << "Standard objects : " << standardobjects.size() << std::endl;
     for (auto it = standardobjects.begin(); it != standardobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
 }
-

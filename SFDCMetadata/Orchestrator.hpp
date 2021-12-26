@@ -34,7 +34,9 @@ private:
     void addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer);
     void addObjectsToProfile(std::string id, const std::string& xmlBuffer);
     bool updateUsersWithPermissionSetId (std::string id, const std::string& xmlBuffer, std::string& nextUrl);
+    bool updateUsersWithPermissionSetLicenseId (std::string id, const std::string& xmlBuffer, std::string& nextUrl);
     void addPermissionSetObjectsToUser(std::string psid, std::string assigneeid);
+    void addPermissionSetLicenseObjectsToUser(std::string pslid, std::string assigneeid);
 public:
     bool run();
 };
