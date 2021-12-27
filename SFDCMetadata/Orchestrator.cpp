@@ -229,6 +229,30 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
 //
 //
 //
+void orchestrator::addPermissionSetObjectsToUserFromPSG(std::string psgid, std::string assigneeid) {
+    auto userit = userMap.find(assigneeid);
+    auto PSGit = permissionSetGroupMap.find(psgid);
+    
+    if (userit == userMap.end()) {
+        if (globals::verbose)
+            std::cout << "addPermissionSetObjectsToUserFromPSG: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
+        return;
+    }
+
+    if (PSGit == permissionSetGroupMap.end()) {
+        std::cerr << "addPermissionSetObjectsToUserFromPSG: permission set group not found in permission set group map, id =" << psgid << std::endl;
+        return;
+    }
+
+    // get vector of psid
+    auto psids = PSGit->second.getPsids();
+    for (auto itpsids = psids.begin(); itpsids != psids.end(); ++itpsids) {
+        addPermissionSetObjectsToUser(*itpsids, assigneeid);
+    }
+}
+//
+//
+//
 void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuffer) {
     
     auto it = profileMap.find(id);
