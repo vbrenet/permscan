@@ -49,7 +49,7 @@ bool SalesforceSession::openSession(const std::string thedomain, const std::stri
     
     std::string urlParameters = "grant_type=password&client_id=" + client_id + "&client_secret=" + client_secret + "&username=" + username + "&password=" + password + securitytoken;
     
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "OpenSession: " << urlParameters << std::endl;
         std::cout << "URL : " << "https://" + domain + "/services/oauth2/token" << std::endl;
     }

@@ -17,6 +17,16 @@
 //
 //
 //
+int orchestrator::countTotalObjectsInUserMap() {
+    int count {0};
+    for (auto it = userMap.begin(); it != userMap.end(); ++it) {
+        count += it->second.getPermittedObjects().size();
+    }
+    return count;
+}
+//
+//
+//
 bool orchestrator::setPSIdsOnPSG (const std::string& xmlBuffer, std::string& nextUrl) {
     bool moretoread {false};
     using namespace rapidxml;
@@ -70,7 +80,8 @@ bool orchestrator::setPSIdsOnPSG (const std::string& xmlBuffer, std::string& nex
 }
     
 return  moretoread;
-}//
+}
+//
 //
 //
 bool orchestrator::updateUsersWithPermissionSetLicenseId (std::string pslid, const std::string& xmlBuffer, std::string& nextUrl) {
@@ -119,7 +130,6 @@ bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::
     
     xml_node<> * nexturl = node->first_node("nextRecordsUrl");
     if (nexturl) {
-        //std::cout << "updateUsersWithPermissionSetId : nextRecordsUrl : " << nexturl->value() << std::endl;
         std::string url = nexturl->value();
         
         // extract url
@@ -157,7 +167,6 @@ bool orchestrator::updateUsersWithPermissionSetIdFromPSG (std::string psgid, con
     
     xml_node<> * nexturl = node->first_node("nextRecordsUrl");
     if (nexturl) {
-        //std::cout << "updateUsersWithPermissionSetId : nextRecordsUrl : " << nexturl->value() << std::endl;
         std::string url = nexturl->value();
         
         // extract url
@@ -177,9 +186,7 @@ bool orchestrator::updateUsersWithPermissionSetIdFromPSG (std::string psgid, con
        xml_node<> * objectnode = child->first_node("AssigneeId");
        if (objectnode) {
            assigneeid = objectnode->value();
-           //
-           // TBC
-           //
+           addPermissionSetObjectsToUserFromPSG(psgid, assigneeid);
        }
    }
     
@@ -511,12 +518,10 @@ void orchestrator::initializePermissionsSet(const std::string& xmlBuffer) {
        xml_node<> * objectnode = child->first_node("Id");
        if (objectnode) {
            id = objectnode->value();
-           //std::cout <<  "Id: " << objectnode->value() << std::endl;
        }
        xml_node<> * namenode = child->first_node("Name");
        if (namenode) {
            name = namenode->value();
-           //std::cout <<  "Name: " << namenode->value() << std::endl;
        }
        if (namenode && objectnode) {
            permissionSetMap.insert ( std::pair<std::string,permissionSet>(id, {id,name}) );
@@ -567,18 +572,17 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
     xml_node<> *node = document.first_node("QueryResult");
     
     xml_node<> * sizenode = node->first_node("totalSize");
-    std::cout << "Total number of active users from query : " << sizenode->value() << std::endl;
+    if (globals::verbose)
+        std::cout << "Total number of active users from query : " << sizenode->value() << std::endl;
     
     xml_node<> * nexturl = node->first_node("nextRecordsUrl");
     if (nexturl) {
-        //std::cout << "nextRecordsUrl : " << nexturl->value() << std::endl;
         std::string url = nexturl->value();
         
         // extract url
         size_t beginindex = url.find("query/");
             
         nextUrl = url.substr(beginindex+6);
-        //std::cout << "url " << nextUrl << std::endl;
         
         moretoread = true;
     }
@@ -629,7 +633,8 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
         }
         
     }
-    std::cout << "number insertions : " << nbinsert << std::endl;
+    if (globals::verbose)
+        std::cout << "number user insertions : " << nbinsert << std::endl;
     
     return  moretoread;
 }
@@ -667,7 +672,7 @@ bool orchestrator::run() {
 
     restQuery("?q=SELECT+ID+,+Name+FROM+PermissionSet", readBuffer);
 
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "PermissionSet query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
@@ -679,19 +684,29 @@ bool orchestrator::run() {
     // read permission set groups
     //
     //
-    std::cout << "Reading permissions set groups...";
+    std::cout << std::endl << "Reading permissions set groups...";
     
     restQuery("?q=SELECT+ID+,+MasterLabel+,+DeveloperName+FROM+PermissionSetGroup", readBuffer);
 
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "PermissionSetGroup query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
     
     initializePermissionsSetGroup(readBuffer);
     
+    if (globals::verbose) {
+        std::cout << permissionSetGroupMap.size() << " permission set groups read" << std::endl;
+    }
+    
+    //
+    //
     // read Permission Set Group Components and enrich Permission Set Groups with Permission Set ids
-    restQuery("?q=SELECT+ID+,+PermissionSetGroupId+,+PermissionSetId+FROM+PermissionSetGroupComponent+where+isactive+=+true", readBuffer);
+    //
+    //
+    std::cout << std::endl << "Reading permissions set group components...";
+
+    restQuery("?q=SELECT+ID+,+PermissionSetGroupId+,+PermissionSetId+FROM+PermissionSetGroupComponent", readBuffer);
     
     std::string nexturl {};
     
@@ -706,6 +721,15 @@ bool orchestrator::run() {
         }
     }
     
+    if (globals::verbose) {
+        for (auto it1 = permissionSetGroupMap.begin(); it1 != permissionSetGroupMap.end(); ++it1) {
+            std::cout << "Permission set group: " << it1->second.getLabel() << std::endl;
+            auto psids = it1->second.getPsids();
+            for (auto it2 = psids.begin(); it2 != psids.end(); ++it2)
+                std::cout << *it2 << " ";
+            std::cout << std::endl;
+        }
+    }
     //
     //
     // read profiles
@@ -715,7 +739,7 @@ bool orchestrator::run() {
     
     restQuery("?q=SELECT+ID+,+Name+,+UserLicenseId+FROM+Profile", readBuffer);
 
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "PermissionSet query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
@@ -728,7 +752,7 @@ bool orchestrator::run() {
     
     restQuery("?q=SELECT+ID+,+Name+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+UserLicense", readBuffer);
 
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "License query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
@@ -736,9 +760,11 @@ bool orchestrator::run() {
     initializeLicenses(readBuffer);
     std::cout << std::endl << licenseMap.size() << " licenses inserted";
 
-    std::cout << std::endl;
-    for (auto it=licenseMap.begin(); it != licenseMap.end(); ++it)
-        std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+    if (globals::verbose) {
+        std::cout << std::endl;
+        for (auto it=licenseMap.begin(); it != licenseMap.end(); ++it)
+            std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+    }
     
     //
     //
@@ -749,7 +775,7 @@ bool orchestrator::run() {
     
     restQuery("?q=SELECT+ID+,+DeveloperName+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+PermissionSetLicense", readBuffer);
 
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         std::cout << "permission set license query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
@@ -757,9 +783,11 @@ bool orchestrator::run() {
     initializePermissionSetLicenses(readBuffer);
     std::cout << std::endl << permissionSetLicenseMap.size() << " permission set licenses inserted";
 
-    std::cout << std::endl;
-    for (auto it=permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it)
-        std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+    if (globals::verbose) {
+        std::cout << std::endl;
+        for (auto it=permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it)
+            std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
+    }
 
     //
     //
@@ -863,7 +891,6 @@ bool orchestrator::run() {
             it->second.setProfileName(prfit->second.getName());
             auto theset = prfit->second.getobjects();
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
-                //std::cout << "to insert " << *itset << std::endl;
                 it->second.insertPermittedObject(*itset);
             }
         // license
@@ -889,7 +916,6 @@ bool orchestrator::run() {
     std::cout << "Reading permission set assignments ..." << std::endl;
     
     for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it) {
-        //std::cout << it->second.getName() << " ..." << std::endl;
         if (!restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetAssignment+where+PermissionSetId+=+'" + it->first + "'", readBuffer)) {
             std::cerr << "PermissionSetAssignment query error" << std::endl;
             return false;
@@ -913,6 +939,10 @@ bool orchestrator::run() {
     //
     std::cout << "Reading permission set group assignments ..." << std::endl;
     
+    if (globals::verbose) {
+        std::cout << "Before PSG assignments, " << countTotalObjectsInUserMap() << std::endl;
+    }
+
     for (auto it = permissionSetGroupMap.begin(); it != permissionSetGroupMap.end(); ++it) {
         if (!restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetAssignment+where+PermissionSetGroupId+=+'" + it->first + "'", readBuffer)) {
             std::cerr << "PermissionSetGroupAssignment query error" << std::endl;
@@ -928,6 +958,10 @@ bool orchestrator::run() {
                 return false;
             }
         }
+    }
+    
+    if (globals::verbose) {
+        std::cout << "After PSG assignments, " << countTotalObjectsInUserMap() << std::endl;
     }
 
     //
@@ -956,7 +990,7 @@ bool orchestrator::run() {
     
     
     // if verbose iterate on profiles and permissionSet map and print objects
-    if (globals::verbose) {
+    if (globals::veryverbose) {
         for (auto it : permissionSetMap) {
             std::cout << "Permission set name : " << it.second.getName() << std::endl;
             auto theset = it.second.getobjects();
@@ -976,7 +1010,7 @@ bool orchestrator::run() {
    
     //
     //
-    // iterate on user map and print objects
+    // iterate on user map, distribute and print objects
     //
     //
 
@@ -994,7 +1028,7 @@ bool orchestrator::run() {
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         if (it->second.nbCustomObjects() > 10) {
             u++;
-            std::cout << it->second.getFullName() << std::endl;
+            std::cout << it->second.getFullName() << " " << it->second.nbCustomObjects() << " custom objects" << std::endl;
         }
     }
     std::cout << "*** total active users with more than 10 custom objects : " << u << std::endl;

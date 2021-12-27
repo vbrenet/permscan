@@ -34,6 +34,7 @@ void exitWithHelp() {
     std::cout << "permscan -version" << std::endl << std::endl;
     std::cout << "OPTIONS:" << std::endl;
     std::cout << "-v : verbose mode" << std::endl;
+    std::cout << "-vv : very verbose mode (trace)" << std::endl;
     std::cout << "workingDirectory (mandatory) : working directory which must contain config files" << std::endl;
     exit(0);
 }
@@ -41,7 +42,7 @@ void exitWithHelp() {
 //
 //
 void exitWithSyntaxError() {
-    std::cerr << "Syntax error - SYNTAX : permscan [-version] [-help] [-v] workingDirectory" << std::endl;
+    std::cerr << "Syntax error - SYNTAX : permscan [-version] [-help] [-v] [-vv] workingDirectory" << std::endl;
     exit(-1);
 }
 //
@@ -57,6 +58,7 @@ int main(int argc, const char * argv[]) {
         1,
         {
             {"-v",{false,false}},
+            {"-vv",{false,false}},
             {"-help",{false,false}},
             {"-version",{false,false}}
         }
@@ -81,10 +83,15 @@ int main(int argc, const char * argv[]) {
     
     for (auto curr : parameters) {
         
-      if (curr.getName().compare("-v") == 0) {
-             globals::verbose = true;
-         }
-       
+        if (curr.getName().compare("-v") == 0) {
+            globals::verbose = true;
+        }
+        
+        if (curr.getName().compare("-vv") == 0) {
+            globals::verbose = true;
+            globals::veryverbose = true;
+        }
+
      }  // end for parameters
     
     

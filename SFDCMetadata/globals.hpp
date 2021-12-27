@@ -16,6 +16,7 @@ class globals {
 public:
     static std::string workingDirectory;
     static bool verbose;
+    static bool veryverbose;
 };
 
 #endif /* globals_hpp */

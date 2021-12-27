@@ -27,6 +27,8 @@ private:
     std::map<std::string,salesforceUser> userMap;
     std::map<std::string,license> licenseMap;
     std::map<std::string,permissionSetLicense> permissionSetLicenseMap;
+    
+    int countTotalObjectsInUserMap();
 
     void initializePermissionsSet(const std::string& xmlBuffer);
     void initializePermissionsSetGroup(const std::string& xmlBuffer);

@@ -10,3 +10,4 @@
 
 std::string globals::workingDirectory;
 bool globals::verbose {false};
+bool globals::veryverbose {false};

@@ -43,7 +43,7 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
     ssurl << "https://" << ((isSandbox) ? "test." : "login.") << "salesforce.com/services/Soap/c/" << apiversion;
     
     if (globals::verbose)
-        std::cout << "session open url: " << ssurl.str() << std::endl;
+        std::cout << "metadata session open url: " << ssurl.str() << std::endl;
     
     std::stringstream ssbody;
     ssbody << "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"
@@ -71,7 +71,7 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, ssurl.str().c_str());
         
-        if (globals::verbose) {
+        if (globals::veryverbose) {
             std::cout << "URL: " << ssurl.str() << std::endl;
             std::cout << "BODY size: " << strlen(ssbody.str().c_str());
             std::cout << "\nBODY: \n" << ssbody.str() << std::endl;
@@ -120,7 +120,7 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
         return false;
     }
     
-    if (globals::verbose)
+    if (globals::veryverbose)
         std::cout << "Received buffer: " << readBuffer << std::endl;
 
     using namespace rapidxml;
@@ -182,7 +182,8 @@ bool metadataSession::call(const std::string theaction, const std::string thebod
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, ssurl.str().c_str());
         
-        if (globals::verbose) {
+        if (globals::veryverbose) {
+            std::cout << "metadataSession::call" << std::endl;
             std::cout << "URL: " << ssurl.str() << std::endl;
             std::cout << "BODY size: " << strlen(body.c_str());
             std::cout << "\nBODY: \n" << body  << std::endl;
