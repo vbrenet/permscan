@@ -54,7 +54,7 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
     << username
     << "</username>\n"
     << "<password>"
-    << password
+    << password << securitytoken
     << "</password>\n"
     << "</login>\n"
     << "</soapenv:Body>\n"

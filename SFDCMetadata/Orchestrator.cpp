@@ -17,6 +17,62 @@
 //
 //
 //
+bool orchestrator::setPSIdsOnPSG (const std::string& xmlBuffer, std::string& nextUrl) {
+    bool moretoread {false};
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * nexturl = node->first_node("nextRecordsUrl");
+    if (nexturl) {
+        std::string url = nexturl->value();
+        
+        // extract url
+        size_t beginindex = url.find("query/");
+            
+        nextUrl = url.substr(beginindex+6);
+        
+        moretoread = true;
+    }
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string PSGId {};
+       std::string PSId {};
+
+       xml_node<> * PSGIdNode = child->first_node("PermissionSetGroupId");
+       if (PSGIdNode) {
+           PSGId = PSGIdNode->value();
+       }
+       xml_node<> * PSIdNode = child->first_node("PermissionSetId");
+       if (PSIdNode) {
+           PSId = PSIdNode->value();
+       }
+       if (PSIdNode && PSGIdNode) {
+           auto PSGit = permissionSetGroupMap.find(PSGId);
+           if (PSGit != permissionSetGroupMap.end()) {
+               auto PSit = permissionSetMap.find(PSId);
+               if (PSit != permissionSetMap.end()) {
+                   // the two ids are found
+                   PSGit->second.insertPsid(PSit->second.getId());
+               }
+               else {
+                   std::cerr << "setPSIdsOnPSG: Permission Set " << PSId << " not found in PS Map" << std::endl;
+               }
+           }
+           else {
+               std::cerr << "setPSIdsOnPSG: Permission Set Group " << PSGId << " not found in PSG Map" << std::endl;
+           }
+       }
+}
+    
+return  moretoread;
+}//
+//
+//
 bool orchestrator::updateUsersWithPermissionSetLicenseId (std::string pslid, const std::string& xmlBuffer, std::string& nextUrl) {
     bool moretoread {false};
     using namespace rapidxml;
@@ -90,6 +146,45 @@ bool orchestrator::updateUsersWithPermissionSetId (std::string psid, const std::
 return  moretoread;
 }
 //
+//
+//
+bool orchestrator::updateUsersWithPermissionSetIdFromPSG (std::string psgid, const std::string& xmlBuffer, std::string& nextUrl) {
+    bool moretoread {false};
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * nexturl = node->first_node("nextRecordsUrl");
+    if (nexturl) {
+        //std::cout << "updateUsersWithPermissionSetId : nextRecordsUrl : " << nexturl->value() << std::endl;
+        std::string url = nexturl->value();
+        
+        // extract url
+        size_t beginindex = url.find("query/");
+            
+        nextUrl = url.substr(beginindex+6);
+        
+        moretoread = true;
+    }
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string assigneeid {};
+    
+       xml_node<> * objectnode = child->first_node("AssigneeId");
+       if (objectnode) {
+           assigneeid = objectnode->value();
+           //
+           // TBC
+           //
+       }
+   }
+    
+return  moretoread;
+}//
 //
 //
 void orchestrator::addPermissionSetLicenseObjectsToUser(std::string pslid, std::string assigneeid) {
@@ -373,7 +468,8 @@ void orchestrator::initializePermissionSetLicenses(const std::string& xmlBuffer)
            permissionSetLicenseMap.insert ( std::pair<std::string,permissionSetLicense>(id, {id, name, label, status, std::stoi(total), std::stoi(used)}) );
        }
    }
-}//
+}
+//
 //
 //
 void orchestrator::initializePermissionsSet(const std::string& xmlBuffer) {
@@ -400,6 +496,39 @@ void orchestrator::initializePermissionsSet(const std::string& xmlBuffer) {
        }
        if (namenode && objectnode) {
            permissionSetMap.insert ( std::pair<std::string,permissionSet>(id, {id,name}) );
+       }
+   }
+}
+//
+//
+//
+void orchestrator::initializePermissionsSetGroup(const std::string& xmlBuffer) {
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("QueryResult");
+    
+    xml_node<> * servernode = node->first_node("records");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling())
+   {
+       std::string id {};
+       std::string developername {};
+       std::string label {};
+       xml_node<> * objectnode = child->first_node("Id");
+       if (objectnode) {
+           id = objectnode->value();
+       }
+       xml_node<> * namenode = child->first_node("DeveloperName");
+       if (namenode) {
+           developername = namenode->value();
+       }
+       xml_node<> * labelnode = child->first_node("MasterLabel");
+       if (labelnode) {
+           label = labelnode->value();
+       }
+       if (namenode && objectnode) {
+           permissionSetGroupMap.insert ( std::pair<std::string,permissionSetGroup>(id, {id, label, developername}) );
        }
    }
 }
@@ -485,7 +614,11 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
 //
 bool orchestrator::run() {
     
+    //
+    //
     //  open REST session
+    //
+    //
     sessionCredentials credentials {
             config::isSandbox(),
             config::getDomain(),
@@ -499,7 +632,11 @@ bool orchestrator::run() {
     if (!SalesforceSession::openSession(credentials))
         return false ;
     
+    //
+    //
     //  read permissions set
+    //
+    //
     std::cout << "Reading permissions set ...";
     
     std::string readBuffer;
@@ -513,7 +650,43 @@ bool orchestrator::run() {
     
     initializePermissionsSet(readBuffer);
     
+    //
+    //
+    // read permission set groups
+    //
+    //
+    std::cout << "Reading permissions set groups...";
+    
+    restQuery("?q=SELECT+ID+,+MasterLabel+,+DeveloperName+FROM+PermissionSetGroup", readBuffer);
+
+    if (globals::verbose) {
+        std::cout << "PermissionSetGroup query: " << std::endl;
+        std::cout << readBuffer << std::endl;
+    }
+    
+    initializePermissionsSetGroup(readBuffer);
+    
+    // read Permission Set Group Components and enrich Permission Set Groups with Permission Set ids
+    restQuery("?q=SELECT+ID+,+PermissionSetGroupId+,+PermissionSetId+FROM+PermissionSetGroupComponent+where+isactive+=+true", readBuffer);
+    
+    std::string nexturl {};
+    
+    bool nextRecordsToRead = setPSIdsOnPSG(readBuffer, nexturl);
+    
+    while (nextRecordsToRead) {
+        if (restQuery(nexturl, readBuffer))
+            nextRecordsToRead = setPSIdsOnPSG(readBuffer, nexturl);
+        else {
+            std::cerr << "PermissionSetGroupComponent query error" << std::endl;
+            return false;
+        }
+    }
+    
+    //
+    //
     // read profiles
+    //
+    //
     std::cout << std::endl << "Reading profiles ...";
     
     restQuery("?q=SELECT+ID+,+Name+,+UserLicenseId+FROM+Profile", readBuffer);
@@ -543,7 +716,11 @@ bool orchestrator::run() {
     for (auto it=licenseMap.begin(); it != licenseMap.end(); ++it)
         std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
     
+    //
+    //
     // read permission set license table
+    //
+    //
     std::cout << std::endl << "Reading permission set licences ...";
     
     restQuery("?q=SELECT+ID+,+DeveloperName+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+PermissionSetLicense", readBuffer);
@@ -560,14 +737,21 @@ bool orchestrator::run() {
     for (auto it=permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it)
         std::cout << it->second.getId() << " " << it->second.getName() << " " << it->second.getStatus() << " total: " << it->second.getTotal() << " used: " << it->second.getUsed() << std::endl;
 
+    //
+    //
     // open metadatasession
+    //
     //
     if (!metadataSession::openMetadataSession(config::isSandbox(), config::getUsername(), config::getPassword(), config::getApiVersion(), config::getSecurityToken())) {
         std::cerr << "openMetadataSession error" << std::endl;
         return false;
     }
     
+    //
+    //
     // iterate on profiles map
+    //
+    //
     std::cout << std::endl << "Analyzing profiles metadata..." << std::endl;
 
     int j {0};
@@ -591,7 +775,11 @@ bool orchestrator::run() {
 
     std::cout << std::endl;
  
+    //
+    //
     // iterate on permissionSet map
+    //
+    //
     std::cout << std::endl << "Analyzing permissions set metadata..." << std::endl;
 
     int i {0};
@@ -615,13 +803,15 @@ bool orchestrator::run() {
 
     std::cout << std::endl;
  
+    //
+    //
     // read users
+    //
+    //
     std::cout << "Reading active users ..." << std::endl;
     restQuery("?q=SELECT+ID+,+Username+,+Firstname+,+Lastname+,+ProfileId+FROM+User+where+isactive+=+true", readBuffer);
-    
-    std::string nexturl {};
-    
-    bool nextRecordsToRead = initializeUsers(readBuffer, nexturl);
+        
+    nextRecordsToRead = initializeUsers(readBuffer, nexturl);
     
     while (nextRecordsToRead) {
         if (restQuery(nexturl, readBuffer))
@@ -634,7 +824,11 @@ bool orchestrator::run() {
     
     std::cout << "Nb active users : " << userMap.size() << std::endl;
     
+    //
+    //
     // add objects from profiles to users, and main license
+    //
+    //
     std::cout << "Assigning objects to users from profiles ..." << std::endl;
 
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
@@ -663,7 +857,11 @@ bool orchestrator::run() {
         }
     } // end for users
     
+    //
+    //
     // read permission set assignments
+    //
+    //
     std::cout << "Reading permission set assignments ..." << std::endl;
     
     for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it) {
@@ -684,7 +882,35 @@ bool orchestrator::run() {
         }
     }
     
+    //
+    //
+    // read permission set group assignments
+    //
+    //
+    std::cout << "Reading permission set group assignments ..." << std::endl;
+    
+    for (auto it = permissionSetGroupMap.begin(); it != permissionSetGroupMap.end(); ++it) {
+        if (!restQuery("?q=SELECT+AssigneeId+FROM+PermissionSetAssignment+where+PermissionSetGroupId+=+'" + it->first + "'", readBuffer)) {
+            std::cerr << "PermissionSetGroupAssignment query error" << std::endl;
+            return false;
+        }
+        
+        nextRecordsToRead = updateUsersWithPermissionSetIdFromPSG (it->first, readBuffer, nexturl);
+        while (nextRecordsToRead) {
+            if (restQuery(nexturl, readBuffer))
+                nextRecordsToRead = updateUsersWithPermissionSetIdFromPSG (it->first, readBuffer, nexturl);
+            else {
+                std::cerr << "PermissionSetGroupAssignment query error" << std::endl;
+                return false;
+            }
+        }
+    }
+
+    //
+    //
     // read permission set license assignments
+    //
+    //
     std::cout << "Reading permission set license assignments ..." << std::endl;
     
     for (auto it = permissionSetLicenseMap.begin(); it != permissionSetLicenseMap.end(); ++it) {
@@ -724,7 +950,11 @@ bool orchestrator::run() {
 
     }
    
+    //
+    //
     // iterate on user map and print objects
+    //
+    //
 
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         it->second.distributeObjects();
