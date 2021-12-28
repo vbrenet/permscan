@@ -8,12 +8,55 @@
 
 #include "Orchestrator.hpp"
 #include <iostream>
+#include <fstream>
 #include "metadataSession.hpp"
 #include "rapidxml/rapidxml.hpp"
 #include "config.hpp"
 #include "SalesforceSession.hpp"
 #include "utils.hpp"
 #include "globals.hpp"
+//
+//
+//
+void orchestrator::outputcsv() {
+    std::ofstream ofs {globals::workingDirectory + "/users.csv"};
+    
+    // header
+    ofs << "Date,";
+    ofs << "Id,";
+    ofs << "Username,";
+    ofs << "FirstName,";
+    ofs << "LastName,";
+    ofs << "Profile,";
+    ofs << "License,";
+    ofs << "TotalObjectNumber,";
+    ofs << "StandardObjectNumber,";
+    ofs << "PackagedObjectNumber,";
+    ofs << "CustomObjectNumber,";
+    ofs << "MaxCustomObjects,";
+    ofs << "IsCompliant" << std::endl;
+    
+    ofs << std::boolalpha;
+    
+    for (auto it = userMap.begin(); it != userMap.end(); ++it){
+        ofs << getDateString() << ",";
+        ofs << "\"" << it->second.getId() << "\"" << ",";
+        ofs << "\"" << it->second.getUsername() << "\"" << ",";
+        ofs << "\"" << it->second.getFirstName() << "\"" << ",";
+        ofs << "\"" << it->second.getLastName() << "\"" << ",";
+        ofs << "\"" << it->second.getProfileName() << "\"" << ",";
+        ofs << "\"" << it->second.getLicenseName() << "\"" << ",";
+        ofs << it->second.nbObjects() << ",";
+        ofs << it->second.nbStandardObjects() << ",";
+        ofs << it->second.nbPackagedObjects() << ",";
+        ofs << it->second.nbCustomObjects() << ",";
+        ofs << it->second.getMaxCustomObjects() << ",";
+        ofs << it->second.isCompliant();
+        ofs << std::endl;
+    }
+    
+    ofs.close();
+}
 //
 //
 //
@@ -1015,6 +1058,7 @@ bool orchestrator::run() {
     //
 
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
+        it->second.computeMaxCustomObjects();
         it->second.distributeObjects();
     }
 
@@ -1023,15 +1067,22 @@ bool orchestrator::run() {
         it->second.print();
     }
 
-    std::cout << std::endl << "*** Users with more than 10 custom objects :" << std::endl;
+    std::cout << std::endl << "*** Users not compliant :" << std::endl;
     int u {0};
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
-        if (it->second.nbCustomObjects() > 10) {
+        if (!it->second.isCompliant()) {
             u++;
-            std::cout << it->second.getFullName() << " " << it->second.nbCustomObjects() << " custom objects" << std::endl;
+            std::cout << it->second.getFullName() << " " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl;
         }
     }
-    std::cout << "*** total active users with more than 10 custom objects : " << u << std::endl;
+    std::cout << "*** total active not compliant users: " << u << std::endl;
 
+    //
+    //
+    // output csv
+    //
+    //
+    outputcsv();
+    
     return true;
 }

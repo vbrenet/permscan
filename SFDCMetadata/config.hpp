@@ -27,6 +27,8 @@ private:
                         ISPROD,
                         APIVERSION,
                         SECURITYTOKEN,
+                        DEFAULT,
+                        PSLICENSE,
                         UNKNOWN};
     struct tokenDesc {
         token theToken;
@@ -41,12 +43,15 @@ private:
     static std::string securitytoken;
     static std::string apiversion;
     static bool isASandbox;
+    static int defaultAuthorizedObjectNumber;
+    static std::map<std::string,int> pslicenseauthorizationsmap;
     //
     static bool getIsSandbox(const std::string&);
     static void getUseFileForAttributeList(const std::string&);
     static void updateExcludedAttributes(const std::string&);
     static token getTokenValue(const std::string&, std::string&);
     static void processLine(const std::string&);
+    static void addpslicensevalue(const std::string&);
     
 public:
     
@@ -55,13 +60,15 @@ public:
     //
     //  config accessors
     //
-    static std::string& getClientId() {return clientid;};
-    static std::string& getClientSecret() {return clientsecret;};
-    static std::string& getDomain() {return domain;};
-    static std::string& getUsername() {return username;};
-    static std::string& getPassword() {return password;};
-    static std::string& getSecurityToken() {return securitytoken;};
-    static std::string& getApiVersion() {return apiversion;};
+    static const std::string& getClientId() {return clientid;};
+    static const std::string& getClientSecret() {return clientsecret;};
+    static const std::string& getDomain() {return domain;};
+    static const std::string& getUsername() {return username;};
+    static const std::string& getPassword() {return password;};
+    static const std::string& getSecurityToken() {return securitytoken;};
+    static const std::string& getApiVersion() {return apiversion;};
+    static int getDefaultAuthorizedObjectNumber() {return defaultAuthorizedObjectNumber;};
+    static const std::map<std::string,int>& getpslicensemap() {return pslicenseauthorizationsmap;};
 
     static bool isSandbox() {return isASandbox;};
     //

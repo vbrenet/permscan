@@ -108,10 +108,15 @@ int main(int argc, const char * argv[]) {
         std::cerr << "config file not found or empty" << std::endl;
         exitWithSyntaxError();
     }
-/*
-    if (!config::checkConfig())
-        exit(-1);
-  */
+
+    // if verbose, print custom object authorizations
+    if (globals::verbose) {
+        std::cout << "default custom object number: " << config::getDefaultAuthorizedObjectNumber() << std::endl;
+        auto licensemap = config::getpslicensemap();
+        for (auto it = licensemap.begin(); it != licensemap.end(); ++it)
+            std::cout << "permission set license: " << it->first << " -custom objet number: " << it->second << std::endl;
+    }
+    
     orchestrator theOrchestrator {};
     
     if (!theOrchestrator.run()) {

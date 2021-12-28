@@ -29,20 +29,26 @@ private:
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
     std::vector<std::string> standardobjects;
-
+    int maxcustomobjects;
+    
 public:
     salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
+    const std::string getFirstName() const {return firstname;}
+    const std::string getLastName() const {return lastname;}
     const std::string getId() const {return id;}
     const std::string getUsername() const {return username;}
     const std::string getProfile() const {return profileid;}
     const std::string getProfileName() const {return profilename;}
     const std::string getLicenseName() const {return licensename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
+    const long nbObjects() {return allPermittedObjects.size();}
     const long nbCustomObjects() {return customobjects.size();}
     const long nbPackagedObjects() {return packagedobjects.size();}
     const long nbStandardObjects() {return standardobjects.size();}
+    int getMaxCustomObjects() {return maxcustomobjects;}
+    bool isCompliant() {return nbCustomObjects() <= maxcustomobjects;}
     //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
@@ -50,7 +56,9 @@ public:
     void insertPermissionSetLicense(const std::string pslicence) {permissionSetLicenses.push_back(pslicence);}
 
     //
+    void computeMaxCustomObjects();
     void distributeObjects();
     void print();
+    void outputcsv();
 };
 #endif /* salesforceUser_hpp */
