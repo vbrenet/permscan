@@ -783,7 +783,7 @@ bool orchestrator::run() {
     restQuery("?q=SELECT+ID+,+Name+,+UserLicenseId+FROM+Profile", readBuffer);
 
     if (globals::veryverbose) {
-        std::cout << "PermissionSet query: " << std::endl;
+        std::cout << "Profile query: " << std::endl;
         std::cout << readBuffer << std::endl;
     }
     
