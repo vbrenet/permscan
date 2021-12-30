@@ -18,7 +18,65 @@
 //
 //
 //
-void orchestrator::outputcsv() {
+const void orchestrator::outputprofilecsv() {
+    std::ofstream ofs {globals::workingDirectory + "/profiles.csv"};
+    
+    // header
+    ofs << "Date,";
+    ofs << "Id,";
+    ofs << "Name,";
+    ofs << "TotalObjectNumber,";
+    ofs << "StandardObjectNumber,";
+    ofs << "PackagedObjectNumber,";
+    ofs << "CustomObjectNumber";
+    ofs << std::endl;
+        
+    for (auto it = profileMap.begin(); it != profileMap.end(); ++it){
+        ofs << getDateString() << ",";
+        ofs << "\"" << it->second.getId() << "\"" << ",";
+        ofs << "\"" << it->second.getName() << "\"" << ",";
+        ofs << "\"" << it->second.getTotalNumberOfObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfStandardObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfPackagedObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfCustomObjects() << "\"";
+        ofs << std::endl;
+    }
+    
+    ofs.close();
+}
+//
+//
+//
+const void orchestrator::outputpermissionsetcsv() {
+    std::ofstream ofs {globals::workingDirectory + "/permissionsets.csv"};
+    
+    // header
+    ofs << "Date,";
+    ofs << "Id,";
+    ofs << "Name,";
+    ofs << "TotalObjectNumber,";
+    ofs << "StandardObjectNumber,";
+    ofs << "PackagedObjectNumber,";
+    ofs << "CustomObjectNumber";
+    ofs << std::endl;
+        
+    for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it){
+        ofs << getDateString() << ",";
+        ofs << "\"" << it->second.getId() << "\"" << ",";
+        ofs << "\"" << it->second.getName() << "\"" << ",";
+        ofs << "\"" << it->second.getTotalNumberOfObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfStandardObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfPackagedObjects() << "\"" << ",";
+        ofs << "\"" << it->second.getNumberOfCustomObjects() << "\"";
+        ofs << std::endl;
+    }
+    
+    ofs.close();
+}
+//
+//
+//
+const void orchestrator::outputusercsv() {
     std::ofstream ofs {globals::workingDirectory + "/users.csv"};
     
     // header
@@ -723,7 +781,8 @@ bool orchestrator::run() {
     }
     
     initializePermissionsSet(readBuffer);
-    
+    std::cout << std::endl << permissionSetMap.size() << " permission sets inserted";
+
     //
     //
     // read permission set groups
@@ -739,11 +798,8 @@ bool orchestrator::run() {
     }
     
     initializePermissionsSetGroup(readBuffer);
-    
-    if (globals::verbose) {
-        std::cout << permissionSetGroupMap.size() << " permission set groups read" << std::endl;
-    }
-    
+    std::cout << std::endl << permissionSetGroupMap.size() << " permission set groups inserted";
+
     //
     //
     // read Permission Set Group Components and enrich Permission Set Groups with Permission Set ids
@@ -1081,10 +1137,20 @@ bool orchestrator::run() {
 
     //
     //
-    // output csv
+    // output csvs
     //
     //
-    outputcsv();
+    outputusercsv();
     
+    for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it) {
+        it->second.distributeObjects();
+    }
+    outputpermissionsetcsv();
+    
+    for (auto it = profileMap.begin(); it != profileMap.end(); ++it) {
+        it->second.distributeObjects();
+    }
+    outputprofilecsv();
+
     return true;
 }

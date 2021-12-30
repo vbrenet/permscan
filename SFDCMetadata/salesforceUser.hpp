@@ -60,6 +60,5 @@ public:
     void computeMaxCustomObjects();
     void distributeObjects();
     void print();
-    void outputcsv();
 };
 #endif /* salesforceUser_hpp */

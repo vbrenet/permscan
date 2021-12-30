@@ -45,7 +45,9 @@ private:
     void addPermissionSetObjectsToUser(std::string psid, std::string assigneeid);
     void addPermissionSetObjectsToUserFromPSG(std::string psgid, std::string assigneeid);
     void addPermissionSetLicenseObjectsToUser(std::string pslid, std::string assigneeid);
-    void outputcsv();
+    const void outputusercsv();
+    const void outputpermissionsetcsv();
+    const void outputprofilecsv();
 
 public:
     bool run();
