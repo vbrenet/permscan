@@ -16,22 +16,17 @@
 
 class datasetJson {
 private:
-    static void initFieldBookJson();
-    static void initGlobalUsageJson();
-    static void initUsageByRTJson();
-    static void initPicklistUsageJson();
-    static void initPicklistUsageByRTJson();
+    static void initUsersJson();
+    static void initPermissionSetsJson();
+    static void initProfilesJson();
 
     static void addTextField(std::stringstream&, const std::string);
     
 public:
-    static std::string fieldBookJson;
-    static std::string globalUsageJson;
-    static std::string usageByRTJson;
-    static std::string picklistUsageJson;
-    static std::string picklistUsageByRTJson;
+    static std::string usersJson;
+    static std::string permissionSetsJson;
+    static std::string profilesJson;
 
-    
     static void initDatasetJsonDescriptors();
 };
 #endif /* datasetJson_hpp */

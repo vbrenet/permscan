@@ -758,9 +758,9 @@ bool orchestrator::insertDatasets() {
     //
     const std::string appName {"Permission_Assessment"};
 
-    datasets.push_back({appName, "permscan_users", "permscan_users", globals::workingDirectory + "/users.csv", datasetJson::fieldBookJson});
-    datasets.push_back({appName, "permscan_profiles", "permscan_profiles", globals::workingDirectory + "/profiles.csv", datasetJson::fieldBookJson});
-    datasets.push_back({appName, "permscan_permissionsets", "permscan_permissionsets", globals::workingDirectory + "/permissionsets.csv", datasetJson::fieldBookJson});
+    datasets.push_back({appName, "permscan_users", "permscan_users", globals::workingDirectory + "/users.csv", datasetJson::usersJson});
+    datasets.push_back({appName, "permscan_profiles", "permscan_profiles", globals::workingDirectory + "/profiles.csv", datasetJson::profilesJson});
+    datasets.push_back({appName, "permscan_permissionsets", "permscan_permissionsets", globals::workingDirectory + "/permissionsets.csv", datasetJson::permissionSetsJson});
 
     
     // open session with target org
@@ -1163,17 +1163,14 @@ bool orchestrator::run() {
     //
     //
 
+    std::ofstream ofs {globals::workingDirectory + "/userdetails.txt"};
+    
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         it->second.computeMaxCustomObjects();
         it->second.distributeObjects();
-    }
-
-    std::ofstream ofs {globals::workingDirectory + "/userdetails.txt"};
-
-    for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         it->second.print(ofs);
     }
-    
+
     ofs.close();
 
     std::cout << std::endl << "*** Users not compliant :" << std::endl;
@@ -1184,13 +1181,14 @@ bool orchestrator::run() {
             std::cout << it->second.getFullName() << " " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl;
         }
     }
-    std::cout << "*** total active not compliant users: " << u << std::endl;
+    std::cout << "*** Total active not compliant users: " << u << std::endl;
 
     //
     //
     // output csvs
     //
     //
+    
     outputusercsv();
     
     for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it) {
@@ -1203,5 +1201,13 @@ bool orchestrator::run() {
     }
     outputprofilecsv();
 
+    //
+    //
+    // insert datasets
+    //
+    //
+    
+    insertDatasets();
+    
     return true;
 }

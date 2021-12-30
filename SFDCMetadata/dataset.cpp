@@ -312,10 +312,6 @@ bool dataset::putData() const {
             std::cerr << "dataset::putData : received buffer: " << readBuffer << std::endl;
             return false;
         }
-        else {
-            std::cout << "dataset::putData : http code: " << http_code << std::endl;
-            std::cout << "dataset::putData : received buffer: " << readBuffer << std::endl;
-        }
         
         curl_easy_cleanup(curl);
     }
