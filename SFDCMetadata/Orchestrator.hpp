@@ -48,7 +48,7 @@ private:
     const void outputusercsv();
     const void outputpermissionsetcsv();
     const void outputprofilecsv();
-
+    bool insertDatasets();
 public:
     bool run();
 };

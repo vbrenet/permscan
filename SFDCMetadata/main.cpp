@@ -14,6 +14,7 @@
 #include "globals.hpp"
 #include "config.hpp"
 #include "utils.hpp"
+#include "datasetJson.hpp"
 //
 //
 const std::string version = "1.0.0";
@@ -49,8 +50,6 @@ void exitWithSyntaxError() {
 //
 //
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "exec name : " << argv[0] << std::endl;
     
     // argument analysis
     expectedParameters ep {
@@ -116,6 +115,8 @@ int main(int argc, const char * argv[]) {
         for (auto it = licensemap.begin(); it != licensemap.end(); ++it)
             std::cout << "permission set license: " << it->first << " -custom objet number: " << it->second << std::endl;
     }
+
+    datasetJson::initDatasetJsonDescriptors();
     
     orchestrator theOrchestrator {};
     

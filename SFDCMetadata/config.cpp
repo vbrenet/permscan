@@ -22,6 +22,14 @@ int config::defaultAuthorizedObjectNumber {0};
 std::map<std::string,int> config::pslicenseauthorizationsmap;
 
 bool config::isASandbox {false};
+bool config::dsisASandbox {false};
+
+std::string config::dsclientid;        // REST connected app
+std::string config::dsclientsecret;    // REST connected app secret
+std::string config::dsdomain;
+std::string config::dsusername;
+std::string config::dspassword;
+std::string config::dssecuritytoken {};
 
 const std::vector<config::tokenDesc> config::tokenDescriptions = {
     {config::token::TOKENDOM, "_domain_:"},
@@ -33,6 +41,13 @@ const std::vector<config::tokenDesc> config::tokenDescriptions = {
     {config::token::ISPROD, "_isprod_:"},
     {config::token::APIVERSION, "_apiversion_:"},
     {config::token::DEFAULT, "_default_:"},
+    {config::token::DSDOMAIN, "_datasetdomain_:"},
+    {config::token::DSCLIENTID, "_datasetclientid_:"},
+    {config::token::DSCLIENTSECRET, "_datasetclientsecret_:"},
+    {config::token::DSUSERNAME, "_datasetusername_:"},
+    {config::token::DSPASSWORD, "_datasetpassword_:"},
+    {config::token::DSSECURITYTOKEN, "_datasetsecuritytoken_:"},
+    {config::token::DSISPROD, "_datasetisprod_:"},
     {config::token::PSLICENSE, "_pslicense_:"}
 };
 //
@@ -108,6 +123,27 @@ void config::processLine(const std::string& line) {
             break;
         case token::PSLICENSE:
             addpslicensevalue(value);
+            break;
+        case token::DSDOMAIN:
+            dsdomain = value;
+            break;
+        case token::DSCLIENTID:
+            dsclientid = value;
+            break;
+        case token::DSCLIENTSECRET:
+            dsclientsecret = value;
+            break;
+        case token::DSUSERNAME:
+            dsusername = value;
+            break;
+        case token::DSPASSWORD:
+            dspassword = value;
+            break;
+        case token::DSSECURITYTOKEN:
+            dssecuritytoken = value;
+            break;
+        case token::DSISPROD:
+            dsisASandbox = getIsSandbox(line);
             break;
         default:
             break;

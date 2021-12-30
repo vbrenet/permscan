@@ -12,11 +12,14 @@
 #include <stdio.h>
 #include <string>
 
+enum class datasetOperation  {OVERWRITE, APPEND, UPSERT};
+
 class globals {
 public:
     static std::string workingDirectory;
     static bool verbose;
     static bool veryverbose;
+    static datasetOperation operation;
 };
 
 #endif /* globals_hpp */

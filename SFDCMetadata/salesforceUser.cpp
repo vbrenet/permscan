@@ -49,17 +49,17 @@ void salesforceUser::distributeObjects() {
 //
 //
 //
-void salesforceUser::print() {
-    std::cout << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
-    std::cout << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
-    for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
-    std::cout << "Max authorized objects: " << getMaxCustomObjects() << std::endl;
-    std::cout << "Compliant ? " << std::boolalpha << isCompliant() << std::endl;
-    std::cout << "Total objects : " << allPermittedObjects.size() << std::endl;
-    std::cout << "Custom objects : " << customobjects.size() << std::endl;
-    for (auto it = customobjects.begin(); it != customobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
-    std::cout << "Packaged objects : " << packagedobjects.size() << std::endl;
-    for (auto it = packagedobjects.begin(); it != packagedobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
-    std::cout << "Standard objects : " << standardobjects.size() << std::endl;
-    for (auto it = standardobjects.begin(); it != standardobjects.end(); ++it) std::cout << *it << " "; std::cout << std::endl;
+void salesforceUser::print(std::ofstream& output) {
+    output << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
+    output << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
+    for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) output << *it << " "; output << std::endl;
+    output << "Max authorized objects: " << getMaxCustomObjects() << std::endl;
+    output << "Compliant ? " << std::boolalpha << isCompliant() << std::endl;
+    output << "Total objects : " << allPermittedObjects.size() << std::endl;
+    output << "Custom objects : " << customobjects.size() << std::endl;
+    for (auto it = customobjects.begin(); it != customobjects.end(); ++it) output << *it << " "; output << std::endl;
+    output << "Packaged objects : " << packagedobjects.size() << std::endl;
+    for (auto it = packagedobjects.begin(); it != packagedobjects.end(); ++it) output << *it << " "; output << std::endl;
+    output << "Standard objects : " << standardobjects.size() << std::endl;
+    for (auto it = standardobjects.begin(); it != standardobjects.end(); ++it) output << *it << " "; output << std::endl;
 }

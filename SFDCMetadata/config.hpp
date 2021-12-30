@@ -29,6 +29,13 @@ private:
                         SECURITYTOKEN,
                         DEFAULT,
                         PSLICENSE,
+                        DSDOMAIN,       // Dataset org domain
+                        DSCLIENTID,     // Dataset connected app client id
+                        DSCLIENTSECRET, // Dataset connected app client secret
+                        DSUSERNAME,     // Dataset org username
+                        DSPASSWORD,     // Dataset org user password
+                        DSSECURITYTOKEN,// Dataset org user security token
+                        DSISPROD,       // Dataset org type
                         UNKNOWN};
     struct tokenDesc {
         token theToken;
@@ -45,6 +52,16 @@ private:
     static bool isASandbox;
     static int defaultAuthorizedObjectNumber;
     static std::map<std::string,int> pslicenseauthorizationsmap;
+    //
+    //  dataset org access parameters
+    static std::string dsclientid;
+    static std::string dsclientsecret;
+    static std::string dsdomain;
+    static std::string dsusername;
+    static std::string dspassword;
+    static std::string dssecuritytoken;
+    static bool dsisASandbox;
+    //
     //
     static bool getIsSandbox(const std::string&);
     static void getUseFileForAttributeList(const std::string&);
@@ -72,6 +89,17 @@ public:
 
     static bool isSandbox() {return isASandbox;};
     //
+    //  dataset accessors
+    //
+    //
+    static std::string& getDsClientId() {return dsclientid;};
+    static std::string& getDsClientSecret() {return dsclientsecret;};
+    static std::string& getDsDomain() {return dsdomain;};
+    static std::string& getDsUsername() {return dsusername;};
+    static std::string& getDsPassword() {return dspassword;};
+    static std::string& getDsSecurityToken() {return dssecuritytoken;};
+    static bool getDsIsASandbox() {return dsisASandbox;};
+
     static bool checkConfig();
 };
 #endif /* config_hpp */

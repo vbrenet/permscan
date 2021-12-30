@@ -10,6 +10,7 @@
 #define salesforceUser_hpp
 
 #include <stdio.h>
+#include <fstream>
 #include <string>
 #include <set>
 #include <vector>
@@ -59,6 +60,6 @@ public:
     //
     void computeMaxCustomObjects();
     void distributeObjects();
-    void print();
+    void print(std::ofstream&);
 };
 #endif /* salesforceUser_hpp */

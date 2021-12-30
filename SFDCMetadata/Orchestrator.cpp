@@ -15,6 +15,8 @@
 #include "SalesforceSession.hpp"
 #include "utils.hpp"
 #include "globals.hpp"
+#include "dataset.hpp"
+#include "datasetJson.hpp"
 //
 //
 //
@@ -744,6 +746,52 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
 //
 //
 //
+bool orchestrator::insertDatasets() {
+    // build dataset to insert vector
+    std::vector<dataset> datasets {};
+    //const std::string& app, const std::string& name, const std::string& label, const std::string& inputfile
+    //
+    // Field_Global_Usage, Field Global Usage
+    // Field_Usage_By_RT, Field Usage By RT
+    // Picklist_Usage, Picklist Usage
+    // Picklist_Matrix_Usage, Picklist Usage By RT
+    //
+    const std::string appName {"Permission_Assessment"};
+
+    datasets.push_back({appName, "permscan_users", "permscan_users", globals::workingDirectory + "/users.csv", datasetJson::fieldBookJson});
+    datasets.push_back({appName, "permscan_profiles", "permscan_profiles", globals::workingDirectory + "/profiles.csv", datasetJson::fieldBookJson});
+    datasets.push_back({appName, "permscan_permissionsets", "permscan_permissionsets", globals::workingDirectory + "/permissionsets.csv", datasetJson::fieldBookJson});
+
+    
+    // open session with target org
+    sessionCredentials dscredentials
+    {
+        config::getDsIsASandbox(),
+        config::getDsDomain(),
+        config::getDsClientId(),
+        config::getDsClientSecret(),
+        config::getDsUsername(),
+        config::getDsPassword(),
+        config::getDsSecurityToken()
+    };
+
+    if (!SalesforceSession::openSession(dscredentials))
+        return false;
+    
+    // run insertion of datasets
+    bool result {true};
+    for (auto it = datasets.begin(); it != datasets.end(); ++it) {
+        result = it->exportDataset(globals::operation);
+        if (!result)
+            break;
+    }
+    
+    return result;
+}
+
+//
+//
+//
 bool orchestrator::run() {
     
     //
@@ -1120,10 +1168,13 @@ bool orchestrator::run() {
         it->second.distributeObjects();
     }
 
+    std::ofstream ofs {globals::workingDirectory + "/userdetails.txt"};
+
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
-        std::cout << std::endl;
-        it->second.print();
+        it->second.print(ofs);
     }
+    
+    ofs.close();
 
     std::cout << std::endl << "*** Users not compliant :" << std::endl;
     int u {0};
