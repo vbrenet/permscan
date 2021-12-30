@@ -29,6 +29,7 @@ void orchestrator::outputcsv() {
     ofs << "LastName,";
     ofs << "Profile,";
     ofs << "License,";
+    ofs << "TotalPermissionSetLicences,";
     ofs << "TotalObjectNumber,";
     ofs << "StandardObjectNumber,";
     ofs << "PackagedObjectNumber,";
@@ -46,6 +47,7 @@ void orchestrator::outputcsv() {
         ofs << "\"" << it->second.getLastName() << "\"" << ",";
         ofs << "\"" << it->second.getProfileName() << "\"" << ",";
         ofs << "\"" << it->second.getLicenseName() << "\"" << ",";
+        ofs << it->second.getPermissionSetLicenceNumber() << ",";
         ofs << it->second.nbObjects() << ",";
         ofs << it->second.nbStandardObjects() << ",";
         ofs << it->second.nbPackagedObjects() << ",";
@@ -816,7 +818,7 @@ bool orchestrator::run() {
     //
     std::cout << std::endl << "Reading permission set licences ...";
     
-    restQuery("?q=SELECT+ID+,+DeveloperName+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+PermissionSetLicense", readBuffer);
+    restQuery("?q=SELECT+ID+,+DeveloperName+,+Status+,+UsedLicenses+,+TotalLicenses+,+MasterLabel+FROM+PermissionSetLicense", readBuffer);
 
     if (globals::veryverbose) {
         std::cout << "permission set license query: " << std::endl;

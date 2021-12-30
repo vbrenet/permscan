@@ -49,6 +49,7 @@ public:
     const long nbStandardObjects() {return standardobjects.size();}
     int getMaxCustomObjects() {return maxcustomobjects;}
     bool isCompliant() {return nbCustomObjects() <= maxcustomobjects;}
+    const long getPermissionSetLicenceNumber() const {return permissionSetLicenses.size();}
     //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
