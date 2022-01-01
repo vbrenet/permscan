@@ -23,21 +23,28 @@ private:
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
     std::vector<std::string> standardobjects;
-
+    bool viewAllData;
+    bool modifyAllData;
 public:
-    profile(const std::string i, const std::string n, const std::string lid) : name {n}, id {i}, licenceId {lid} {}
+    profile(const std::string i, const std::string n, const std::string lid) : name {n}, id {i}, licenceId {lid} {viewAllData=false;modifyAllData=false;}
     //
     const std::string getName() const {return name;}
     const std::string getId() const {return id;}
     const std::string getLicenceId() const {return licenceId;}
     const std::set<std::string>& getobjects() const {return objects;}
-    long getTotalNumberOfObjects() {return objects.size();}
-    long getNumberOfCustomObjects() {return customobjects.size();}
-    long getNumberOfPackagedObjects() {return packagedobjects.size();}
-    long getNumberOfStandardObjects() {return standardobjects.size();}
+    long getTotalNumberOfObjects() const {return objects.size();}
+    long getNumberOfCustomObjects() const {return customobjects.size();}
+    long getNumberOfPackagedObjects() const {return packagedobjects.size();}
+    long getNumberOfStandardObjects() const {return standardobjects.size();}
+    bool isViewAllData() const {return viewAllData;}
+    bool isModifyAllData() const {return modifyAllData;}
     //
     void insertObject(const std::string o) {objects.insert(o);}
     //
     void distributeObjects();
+    //
+    void setViewAllData() {viewAllData=true;}
+    void setModifyAllData() {modifyAllData=true;}
+
 };
 #endif /* profile_hpp */

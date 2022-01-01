@@ -20,6 +20,7 @@ public:
     static bool verbose;
     static bool veryverbose;
     static datasetOperation operation;
+    static int nbOrgCustomObjects;
 };
 
 #endif /* globals_hpp */

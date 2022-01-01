@@ -29,7 +29,7 @@ private:
     std::map<std::string,permissionSetLicense> permissionSetLicenseMap;
     
     int countTotalObjectsInUserMap();
-
+    int countOrgCustomObjects (const std::string& xmlBuffer) const;
     void initializePermissionsSet(const std::string& xmlBuffer);
     void initializePermissionsSetGroup(const std::string& xmlBuffer);
     void initializeProfiles(const std::string& xmlBuffer);

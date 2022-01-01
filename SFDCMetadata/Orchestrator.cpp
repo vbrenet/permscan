@@ -365,6 +365,38 @@ void orchestrator::addPermissionSetObjectsToUserFromPSG(std::string psgid, std::
 //
 //
 //
+int orchestrator::countOrgCustomObjects(const std::string &xmlBuffer) const {
+    
+    int count {0};
+    
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)xmlBuffer.c_str());
+    xml_node<> *node = document.first_node("soapenv:Envelope");
+    node = node->first_node("soapenv:Body");
+    node = node->first_node("listMetadataResponse");
+    
+    xml_node<> * servernode = node->first_node("result");
+
+   for (xml_node<> *child = servernode; child; child = child->next_sibling()) {
+       xml_node<> * name = child->first_node("fullName");
+       if (name) {
+           if (endsWith(name->value(), "__c")) {
+               std::string prefix = objectNamePrefix(name->value());
+               if (prefix.size() == 0) {
+                   if (globals::verbose)
+                       std::cout << "Custom object found: " << name->value() << std::endl;
+                   count++;
+               }
+           }
+       }
+    }    // end for objectpermissions
+    
+    return  count;
+}
+//
+//
+//
 void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuffer) {
     
     auto it = profileMap.find(id);
@@ -418,6 +450,34 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
            }
        }
    }    // end for objectpermissions
+    
+    xml_node<> * permissionnode = node->first_node("userPermissions");
+
+    for (xml_node<> *child = permissionnode; child; child = child->next_sibling()) {
+        xml_node<> * name = child->first_node("name");
+        xml_node<> * enabled = child->first_node("enabled");
+
+        if (name) {
+            std::string permname = name->value();
+            std::string isenabled {};
+            if (enabled)
+                isenabled = enabled->value();
+            if (permname.compare("ViewAllData") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setViewAllData();
+                    if (globals::verbose)
+                        std::cout << "Profile " << it->second.getName() << " viewAllData enabled" << std::endl;
+                }
+            }
+            else if (permname.compare("ModifyAllData") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setModifyAllData();
+                    if (globals::verbose)
+                        std::cout << "Profile " << it->second.getName() << " ModifyAllData enabled" << std::endl;
+                }
+            }
+        }
+    }// end for userPermissions
 }
 //
 //
@@ -895,6 +955,10 @@ bool orchestrator::run() {
     
     initializeProfiles(readBuffer);
     std::cout << std::endl << profileMap.size() << " profiles inserted";
+    if (globals::verbose) {
+        for (auto it = profileMap.begin(); it != profileMap.end(); ++it)
+            std::cout << "Profile: " << it->second.getName() << std::endl;
+    }
     
     // read licenses
     std::cout << std::endl << "Reading licences ...";
@@ -947,6 +1011,22 @@ bool orchestrator::run() {
         std::cerr << "openMetadataSession error" << std::endl;
         return false;
     }
+    //
+    // list custom objects to count the total number of them in the org
+    //
+    std::string result;
+    std::string thebody = "<soapenv:Body>";
+    thebody += "<met:listMetadata>";
+    thebody += "<met:ListMetadataQuery>";
+    thebody += "<met:type>CustomObject</met:type>";
+    thebody += "</met:ListMetadataQuery>";
+    thebody += "</met:listMetadata>";
+    thebody += "</soapenv:Body>";
+    if (!metadataSession::call("listMetadata", thebody, result))
+            std::cerr << "listMetadata call error" << std::endl;
+    
+    globals::nbOrgCustomObjects = countOrgCustomObjects(result);
+    std::cout << "Nb custom objects in org (without packages): " << globals::nbOrgCustomObjects << std::endl;
     
     //
     //
@@ -964,13 +1044,16 @@ bool orchestrator::run() {
         thebody +="<met:readMetadata>";
         thebody +="<met:type>Profile</met:type>";
         thebody +="<met:fullName>";
-        thebody += it->second.getName();
+        if (it->second.getName().compare("System Administrator") == 0)
+            thebody += "Admin";
+        else
+            thebody += it->second.getName();
         thebody +="</met:fullName>";
         thebody +="</met:readMetadata>";
         thebody +="</soapenv:Body>";
         if (!metadataSession::call("readMetadata", thebody, result))
             std::cerr << "call error" << std::endl;
-
+        
         addObjectsToProfile(it->first, result);
     }
 
