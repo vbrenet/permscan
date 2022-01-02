@@ -89,6 +89,8 @@ const void orchestrator::outputusercsv() {
     ofs << "LastName,";
     ofs << "Profile,";
     ofs << "License,";
+    ofs << "ViewAll,";
+    ofs << "ModifyAll,";
     ofs << "TotalPermissionSetLicences,";
     ofs << "TotalObjectNumber,";
     ofs << "StandardObjectNumber,";
@@ -107,6 +109,8 @@ const void orchestrator::outputusercsv() {
         ofs << "\"" << it->second.getLastName() << "\"" << ",";
         ofs << "\"" << it->second.getProfileName() << "\"" << ",";
         ofs << "\"" << it->second.getLicenseName() << "\"" << ",";
+        ofs << it->second.isViewAllData() << ",";
+        ofs << it->second.isModifyAllData() << ",";
         ofs << it->second.getPermissionSetLicenceNumber() << ",";
         ofs << it->second.nbObjects() << ",";
         ofs << it->second.nbStandardObjects() << ",";
@@ -1029,7 +1033,7 @@ bool orchestrator::run() {
             std::cerr << "listMetadata call error" << std::endl;
     
     globals::nbOrgCustomObjects = countOrgCustomObjects(result);
-    std::cout << "Nb custom objects in org (without packages): " << globals::nbOrgCustomObjects << std::endl;
+    std::cout << std::endl << "Nb custom objects in org (without packages): " << globals::nbOrgCustomObjects << std::endl;
     
     //
     //

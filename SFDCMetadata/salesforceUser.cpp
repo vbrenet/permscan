@@ -72,12 +72,13 @@ void salesforceUser::distributeObjects() {
 //
 //
 void salesforceUser::print(std::ofstream& output) {
-    output << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
+    output << std::endl << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
     output << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
     for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) output << *it << " "; output << std::endl;
     output << "Max authorized objects: " << getMaxCustomObjects() << std::endl;
+    output << std::boolalpha << "View all ? " << isViewAllData() << " Modify all ? " << isModifyAllData() << std::endl;
     output << "Compliant ? " << std::boolalpha << isCompliant() << std::endl;
-    output << "Total objects : " << allPermittedObjects.size() << std::endl;
+    output << "Total objects : " << nbCustomObjects() + packagedobjects.size() + standardobjects.size() << std::endl;
     output << "Custom objects : " << nbCustomObjects() << std::endl;
     for (auto it = customobjects.begin(); it != customobjects.end(); ++it) output << *it << " "; output << std::endl;
     output << "Packaged objects : " << packagedobjects.size() << std::endl;

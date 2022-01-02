@@ -46,7 +46,7 @@ public:
     const std::string getProfileName() const {return profilename;}
     const std::string getLicenseName() const {return licensename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
-    const long nbObjects() {return allPermittedObjects.size();}
+    const long nbObjects() {return nbCustomObjects() + nbPackagedObjects() + nbStandardObjects();}
     const long nbCustomObjects() const;
     const long nbPackagedObjects() const {return packagedobjects.size();}
     const long nbStandardObjects() const {return standardobjects.size();}

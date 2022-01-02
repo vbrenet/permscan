@@ -74,6 +74,8 @@ void datasetJson::initUsersJson() {
     addTextField(json, "LastName");
     addTextField(json, "Profile");
     addTextField(json, "License");
+    addTextField(json, "ViewAll");
+    addTextField(json, "ModifyAll");
 
     
     json
