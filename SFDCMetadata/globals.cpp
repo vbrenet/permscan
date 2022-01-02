@@ -11,6 +11,5 @@
 std::string globals::workingDirectory;
 bool globals::verbose {false};
 bool globals::veryverbose {false};
-datasetOperation globals::operation;
+bool globals::nodatasets {false};
 int globals::nbOrgCustomObjects {0};
-

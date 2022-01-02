@@ -31,9 +31,11 @@ private:
     std::vector<std::string> packagedobjects;
     std::vector<std::string> standardobjects;
     int maxcustomobjects;
-    
+    bool viewAllData;
+    bool modifyAllData;
+
 public:
-    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {}
+    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
     const std::string getFirstName() const {return firstname;}
@@ -45,17 +47,21 @@ public:
     const std::string getLicenseName() const {return licensename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
     const long nbObjects() {return allPermittedObjects.size();}
-    const long nbCustomObjects() {return customobjects.size();}
-    const long nbPackagedObjects() {return packagedobjects.size();}
-    const long nbStandardObjects() {return standardobjects.size();}
-    int getMaxCustomObjects() {return maxcustomobjects;}
-    bool isCompliant() {return nbCustomObjects() <= maxcustomobjects;}
+    const long nbCustomObjects() const {return customobjects.size();}
+    const long nbPackagedObjects() const {return packagedobjects.size();}
+    const long nbStandardObjects() const {return standardobjects.size();}
+    int getMaxCustomObjects() const {return maxcustomobjects;}
+    bool isCompliant() const;
     const long getPermissionSetLicenceNumber() const {return permissionSetLicenses.size();}
-    //
+    bool isViewAllData() const {return viewAllData;}
+    bool isModifyAllData() const {return modifyAllData;}
+   //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
     void insertPermittedObject(const std::string o) {allPermittedObjects.insert(o);}
     void insertPermissionSetLicense(const std::string pslicence) {permissionSetLicenses.push_back(pslicence);}
+    void setViewAllData() {viewAllData=true;}
+    void setModifyAllData() {modifyAllData=true;}
 
     //
     void computeMaxCustomObjects();

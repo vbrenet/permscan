@@ -30,12 +30,13 @@ void exitWithVersion() {
 //
 void exitWithHelp() {
     std::cout << "SYNTAX:" << std::endl;
-    std::cout << "permscan [-v] workingDirectory" << std::endl;
+    std::cout << "permscan [-v] [-vv] [-nodatasets] workingDirectory" << std::endl;
     std::cout << "permscan -help" << std::endl;
     std::cout << "permscan -version" << std::endl << std::endl;
     std::cout << "OPTIONS:" << std::endl;
     std::cout << "-v : verbose mode" << std::endl;
     std::cout << "-vv : very verbose mode (trace)" << std::endl;
+    std::cout << "-nodatasets : skip dataset creation at the end of execution" << std::endl;
     std::cout << "workingDirectory (mandatory) : working directory which must contain config files" << std::endl;
     exit(0);
 }
@@ -43,7 +44,7 @@ void exitWithHelp() {
 //
 //
 void exitWithSyntaxError() {
-    std::cerr << "Syntax error - SYNTAX : permscan [-version] [-help] [-v] [-vv] workingDirectory" << std::endl;
+    std::cerr << "Syntax error - SYNTAX : permscan [-version] [-nodatasets] [-help] [-v] [-vv] workingDirectory" << std::endl;
     exit(-1);
 }
 //
@@ -59,7 +60,8 @@ int main(int argc, const char * argv[]) {
             {"-v",{false,false}},
             {"-vv",{false,false}},
             {"-help",{false,false}},
-            {"-version",{false,false}}
+            {"-version",{false,false}},
+            {"-nodatasets",{false,false}}
         }
     };
     
@@ -90,6 +92,10 @@ int main(int argc, const char * argv[]) {
             globals::verbose = true;
             globals::veryverbose = true;
         }
+         
+        if (curr.getName().compare("-nodatasets") == 0) {
+            globals::nodatasets = true;
+        }
 
      }  // end for parameters
     
@@ -111,9 +117,12 @@ int main(int argc, const char * argv[]) {
     // if verbose, print custom object authorizations
     if (globals::verbose) {
         std::cout << "default custom object number: " << config::getDefaultAuthorizedObjectNumber() << std::endl;
-        auto licensemap = config::getpslicensemap();
-        for (auto it = licensemap.begin(); it != licensemap.end(); ++it)
+        auto pslicensemap = config::getpslicensemap();
+        for (auto it = pslicensemap.begin(); it != pslicensemap.end(); ++it)
             std::cout << "permission set license: " << it->first << " -custom objet number: " << it->second << std::endl;
+        auto licensemap = config::getlicensemap();
+        for (auto it = licensemap.begin(); it != licensemap.end(); ++it)
+            std::cout << "license: " << it->first << " -custom objet number: " << it->second << std::endl;
     }
 
     datasetJson::initDatasetJsonDescriptors();

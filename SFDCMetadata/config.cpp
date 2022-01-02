@@ -20,6 +20,7 @@ std::string config::domain;
 std::string config::apiversion;
 int config::defaultAuthorizedObjectNumber {0};
 std::map<std::string,int> config::pslicenseauthorizationsmap;
+std::map<std::string,int> config::licenseauthorizationsmap;
 
 bool config::isASandbox {false};
 bool config::dsisASandbox {false};
@@ -48,8 +49,19 @@ const std::vector<config::tokenDesc> config::tokenDescriptions = {
     {config::token::DSPASSWORD, "_datasetpassword_:"},
     {config::token::DSSECURITYTOKEN, "_datasetsecuritytoken_:"},
     {config::token::DSISPROD, "_datasetisprod_:"},
-    {config::token::PSLICENSE, "_pslicense_:"}
+    {config::token::PSLICENSE, "_pslicense_:"},
+    {config::token::LICENSE, "_license_:"}
 };
+//
+//
+//
+void config::addlicensevalue(const std::string & token) {
+    size_t firstColon = token.find_first_of(':');
+    if (firstColon != std::string::npos) {
+        std::string licenselabel = token.substr(0,firstColon);
+        licenseauthorizationsmap.insert(std::pair<std::string,int>(licenselabel, std::stoi(token.substr(firstColon+1))));
+    }
+}
 //
 //
 //
@@ -123,6 +135,9 @@ void config::processLine(const std::string& line) {
             break;
         case token::PSLICENSE:
             addpslicensevalue(value);
+            break;
+        case token::LICENSE:
+            addlicensevalue(value);
             break;
         case token::DSDOMAIN:
             dsdomain = value;

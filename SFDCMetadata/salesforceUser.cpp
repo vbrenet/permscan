@@ -13,6 +13,15 @@
 //
 //
 //
+bool salesforceUser::isCompliant() const {
+    if (viewAllData || modifyAllData)
+        return globals::nbOrgCustomObjects <= maxcustomobjects;
+    else
+        return nbCustomObjects() <= maxcustomobjects;
+}
+//
+//
+//
 void salesforceUser::computeMaxCustomObjects() {
     
     maxcustomobjects = config::getDefaultAuthorizedObjectNumber();
@@ -25,6 +34,13 @@ void salesforceUser::computeMaxCustomObjects() {
                 maxcustomobjects = authampentry->second;
             }
         }
+    }
+    
+    // license entry, if exist, supersedes the PS license map authorizations
+    auto autlicensemap = config::getlicensemap();
+    auto entry = autlicensemap.find(getLicenseName());
+    if (entry != autlicensemap.end()) {
+        maxcustomobjects = entry->second;
     }
 }
 //

@@ -19,7 +19,7 @@ public:
     static std::string workingDirectory;
     static bool verbose;
     static bool veryverbose;
-    static datasetOperation operation;
+    static bool nodatasets;
     static int nbOrgCustomObjects;
 };
 

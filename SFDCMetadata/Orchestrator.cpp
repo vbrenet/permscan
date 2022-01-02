@@ -841,7 +841,7 @@ bool orchestrator::insertDatasets() {
     // run insertion of datasets
     bool result {true};
     for (auto it = datasets.begin(); it != datasets.end(); ++it) {
-        result = it->exportDataset(globals::operation);
+        result = it->exportDataset(datasetOperation::OVERWRITE);
         if (!result)
             break;
     }
@@ -959,8 +959,11 @@ bool orchestrator::run() {
         for (auto it = profileMap.begin(); it != profileMap.end(); ++it)
             std::cout << "Profile: " << it->second.getName() << std::endl;
     }
-    
+    //
+    //
     // read licenses
+    //
+    //
     std::cout << std::endl << "Reading licences ...";
     
     restQuery("?q=SELECT+ID+,+Name+,+Status+,+UsedLicenses+,+TotalLicenses+FROM+UserLicense", readBuffer);
@@ -1121,6 +1124,10 @@ bool orchestrator::run() {
         auto prfit = profileMap.find(theprofile);
         if (prfit != profileMap.end()) {
             it->second.setProfileName(prfit->second.getName());
+            if (prfit->second.isViewAllData())
+                it->second.setViewAllData();
+            if (prfit->second.isModifyAllData())
+                it->second.setModifyAllData();
             auto theset = prfit->second.getobjects();
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 it->second.insertPermittedObject(*itset);
@@ -1289,8 +1296,8 @@ bool orchestrator::run() {
     // insert datasets
     //
     //
-    
-    insertDatasets();
+    if (!globals::nodatasets)
+        insertDatasets();
     
     return true;
 }

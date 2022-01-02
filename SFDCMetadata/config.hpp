@@ -29,6 +29,7 @@ private:
                         SECURITYTOKEN,
                         DEFAULT,
                         PSLICENSE,
+                        LICENSE,
                         DSDOMAIN,       // Dataset org domain
                         DSCLIENTID,     // Dataset connected app client id
                         DSCLIENTSECRET, // Dataset connected app client secret
@@ -52,6 +53,7 @@ private:
     static bool isASandbox;
     static int defaultAuthorizedObjectNumber;
     static std::map<std::string,int> pslicenseauthorizationsmap;
+    static std::map<std::string,int> licenseauthorizationsmap;
     //
     //  dataset org access parameters
     static std::string dsclientid;
@@ -69,7 +71,8 @@ private:
     static token getTokenValue(const std::string&, std::string&);
     static void processLine(const std::string&);
     static void addpslicensevalue(const std::string&);
-    
+    static void addlicensevalue(const std::string&);
+
 public:
     
     static bool getConfig(const std::string filename);
@@ -86,6 +89,7 @@ public:
     static const std::string& getApiVersion() {return apiversion;};
     static int getDefaultAuthorizedObjectNumber() {return defaultAuthorizedObjectNumber;};
     static const std::map<std::string,int>& getpslicensemap() {return pslicenseauthorizationsmap;};
+    static const std::map<std::string,int>& getlicensemap() {return licenseauthorizationsmap;};
 
     static bool isSandbox() {return isASandbox;};
     //
