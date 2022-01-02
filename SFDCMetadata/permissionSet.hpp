@@ -22,18 +22,24 @@ private:
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
     std::vector<std::string> standardobjects;
+    bool viewAllData;
+    bool modifyAllData;
 
 public:
-    permissionSet(const std::string i, const std::string n) : name {n}, id {i} {}
+    permissionSet(const std::string i, const std::string n) : name {n}, id {i} {viewAllData=false;modifyAllData=false;}
     const std::string getName() const {return name;}
     const std::string getId() const {return id;}
     void insertObject(const std::string o) {objects.insert(o);}
     const std::set<std::string>& getobjects() const {return objects;}
-    long getTotalNumberOfObjects() {return objects.size();}
-    long getNumberOfCustomObjects() {return customobjects.size();}
-    long getNumberOfPackagedObjects() {return packagedobjects.size();}
-    long getNumberOfStandardObjects() {return standardobjects.size();}
+    long getTotalNumberOfObjects() const {return objects.size();}
+    long getNumberOfCustomObjects() const {return customobjects.size();}
+    long getNumberOfPackagedObjects() const {return packagedobjects.size();}
+    long getNumberOfStandardObjects() const {return standardobjects.size();}
+    bool isViewAllData() const {return viewAllData;}
+    bool isModifyAllData() const {return modifyAllData;}
     //
+    void setViewAllData() {viewAllData=true;}
+    void setModifyAllData() {modifyAllData=true;}
     void distributeObjects();
 };
 #endif /* permissionSet_hpp */

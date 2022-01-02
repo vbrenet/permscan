@@ -27,16 +27,22 @@ const void orchestrator::outputprofilecsv() {
     ofs << "Date,";
     ofs << "Id,";
     ofs << "Name,";
+    ofs << "ViewAll,";
+    ofs << "ModifyAll,";
     ofs << "TotalObjectNumber,";
     ofs << "StandardObjectNumber,";
     ofs << "PackagedObjectNumber,";
     ofs << "CustomObjectNumber";
     ofs << std::endl;
-        
+
+    ofs << std::boolalpha;
+
     for (auto it = profileMap.begin(); it != profileMap.end(); ++it){
         ofs << getDateString() << ",";
         ofs << "\"" << it->second.getId() << "\"" << ",";
         ofs << "\"" << it->second.getName() << "\"" << ",";
+        ofs << it->second.isViewAllData() << ",";
+        ofs << it->second.isModifyAllData() << ",";
         ofs << "\"" << it->second.getTotalNumberOfObjects() << "\"" << ",";
         ofs << "\"" << it->second.getNumberOfStandardObjects() << "\"" << ",";
         ofs << "\"" << it->second.getNumberOfPackagedObjects() << "\"" << ",";
@@ -56,16 +62,22 @@ const void orchestrator::outputpermissionsetcsv() {
     ofs << "Date,";
     ofs << "Id,";
     ofs << "Name,";
+    ofs << "ViewAll,";
+    ofs << "ModifyAll,";
     ofs << "TotalObjectNumber,";
     ofs << "StandardObjectNumber,";
     ofs << "PackagedObjectNumber,";
     ofs << "CustomObjectNumber";
     ofs << std::endl;
-        
+
+    ofs << std::boolalpha;
+
     for (auto it = permissionSetMap.begin(); it != permissionSetMap.end(); ++it){
         ofs << getDateString() << ",";
         ofs << "\"" << it->second.getId() << "\"" << ",";
         ofs << "\"" << it->second.getName() << "\"" << ",";
+        ofs << it->second.isViewAllData() << ",";
+        ofs << it->second.isModifyAllData() << ",";
         ofs << "\"" << it->second.getTotalNumberOfObjects() << "\"" << ",";
         ofs << "\"" << it->second.getNumberOfStandardObjects() << "\"" << ",";
         ofs << "\"" << it->second.getNumberOfPackagedObjects() << "\"" << ",";
@@ -338,6 +350,11 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
         return;
     }
 
+    if (thePS->second.isModifyAllData())
+        theUser->second.setModifyAllData();
+    if (thePS->second.isViewAllData())
+        theUser->second.setViewAllData();
+
     auto theset = thePS->second.getobjects();
     for (auto itset = theset.begin(); itset != theset.end(); ++itset)
         theUser->second.insertPermittedObject(*itset);
@@ -540,6 +557,35 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
            }
        }
    }
+    
+    xml_node<> * permissionnode = node->first_node("userPermissions");
+
+    for (xml_node<> *child = permissionnode; child; child = child->next_sibling()) {
+        xml_node<> * name = child->first_node("name");
+        xml_node<> * enabled = child->first_node("enabled");
+
+        if (name) {
+            std::string permname = name->value();
+            std::string isenabled {};
+            if (enabled)
+                isenabled = enabled->value();
+            if (permname.compare("ViewAllData") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setViewAllData();
+                    if (globals::verbose)
+                        std::cout << std::endl << "Permission set " << it->second.getName() << " viewAllData enabled" << std::endl;
+                }
+            }
+            else if (permname.compare("ModifyAllData") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setModifyAllData();
+                    if (globals::verbose)
+                        std::cout << std::endl << "Permission set " << it->second.getName() << " ModifyAllData enabled" << std::endl;
+                }
+            }
+        }
+    }// end for userPermissions
+
 }
 //
 //
@@ -813,15 +859,8 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
 bool orchestrator::insertDatasets() {
     // build dataset to insert vector
     std::vector<dataset> datasets {};
-    //const std::string& app, const std::string& name, const std::string& label, const std::string& inputfile
-    //
-    // Field_Global_Usage, Field Global Usage
-    // Field_Usage_By_RT, Field Usage By RT
-    // Picklist_Usage, Picklist Usage
-    // Picklist_Matrix_Usage, Picklist Usage By RT
-    //
-    const std::string appName {"Permission_Assessment"};
 
+    const std::string appName {"Permission_Assessment"};
     datasets.push_back({appName, "permscan_users", "permscan_users", globals::workingDirectory + "/users.csv", datasetJson::usersJson});
     datasets.push_back({appName, "permscan_profiles", "permscan_profiles", globals::workingDirectory + "/profiles.csv", datasetJson::profilesJson});
     datasets.push_back({appName, "permscan_permissionsets", "permscan_permissionsets", globals::workingDirectory + "/permissionsets.csv", datasetJson::permissionSetsJson});
@@ -1283,6 +1322,7 @@ bool orchestrator::run() {
     // output csvs
     //
     //
+    std::cout << "Generating CSV files ... " << u << std::endl;
     
     outputusercsv();
     
@@ -1301,8 +1341,10 @@ bool orchestrator::run() {
     // insert datasets
     //
     //
-    if (!globals::nodatasets)
+    if (!globals::nodatasets) {
+        std::cout << "Generating Datasets ... " << u << std::endl;
         insertDatasets();
+    }
     
     return true;
 }

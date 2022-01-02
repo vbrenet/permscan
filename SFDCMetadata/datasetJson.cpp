@@ -189,7 +189,9 @@ void datasetJson::initPermissionSetsJson() {
     
     addTextField(json, "Id");
     addTextField(json, "Name");
-    
+    addTextField(json, "ViewAll");
+    addTextField(json, "ModifyAll");
+
     json
     << "{"
     << "\"fullyQualifiedName\" : \"TotalObjectNumber\","
@@ -275,7 +277,9 @@ void datasetJson::initProfilesJson() {
     
     addTextField(json, "Id");
     addTextField(json, "Name");
-    
+    addTextField(json, "ViewAll");
+    addTextField(json, "ModifyAll");
+
     json
     << "{"
     << "\"fullyQualifiedName\" : \"TotalObjectNumber\","
