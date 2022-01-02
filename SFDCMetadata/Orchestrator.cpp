@@ -1268,7 +1268,8 @@ bool orchestrator::run() {
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         if (!it->second.isCompliant()) {
             u++;
-            std::cout << it->second.getFullName() << " " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl;
+            std::cout << it->second.getFullName() << " profile: " << it->second.getProfileName()
+            << " : " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl;
         }
     }
     std::cout << "*** Total active not compliant users: " << u << std::endl;

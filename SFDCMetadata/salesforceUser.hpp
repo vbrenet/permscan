@@ -47,7 +47,7 @@ public:
     const std::string getLicenseName() const {return licensename;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
     const long nbObjects() {return allPermittedObjects.size();}
-    const long nbCustomObjects() const {return customobjects.size();}
+    const long nbCustomObjects() const;
     const long nbPackagedObjects() const {return packagedobjects.size();}
     const long nbStandardObjects() const {return standardobjects.size();}
     int getMaxCustomObjects() const {return maxcustomobjects;}

@@ -13,11 +13,17 @@
 //
 //
 //
-bool salesforceUser::isCompliant() const {
+const long salesforceUser::nbCustomObjects() const {
     if (viewAllData || modifyAllData)
-        return globals::nbOrgCustomObjects <= maxcustomobjects;
+        return globals::nbOrgCustomObjects;
     else
-        return nbCustomObjects() <= maxcustomobjects;
+        return customobjects.size();
+}
+//
+//
+//
+bool salesforceUser::isCompliant() const {
+    return nbCustomObjects() <= maxcustomobjects;
 }
 //
 //
@@ -72,7 +78,7 @@ void salesforceUser::print(std::ofstream& output) {
     output << "Max authorized objects: " << getMaxCustomObjects() << std::endl;
     output << "Compliant ? " << std::boolalpha << isCompliant() << std::endl;
     output << "Total objects : " << allPermittedObjects.size() << std::endl;
-    output << "Custom objects : " << customobjects.size() << std::endl;
+    output << "Custom objects : " << nbCustomObjects() << std::endl;
     for (auto it = customobjects.begin(); it != customobjects.end(); ++it) output << *it << " "; output << std::endl;
     output << "Packaged objects : " << packagedobjects.size() << std::endl;
     for (auto it = packagedobjects.begin(); it != packagedobjects.end(); ++it) output << *it << " "; output << std::endl;
