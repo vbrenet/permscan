@@ -54,7 +54,7 @@ void salesforceUser::computeMaxCustomObjects() {
 //
 void salesforceUser::distributeObjects() {
     for (auto it = allPermittedObjects.begin(); it != allPermittedObjects.end(); ++it) {
-        if (endsWith(*it, "__c")) {
+        if (endsWith(*it, "__c") || endsWith(*it, "__mdt")) {
             std::string prefix = objectNamePrefix(*it);
             if (prefix.size() == 0) {
                 customobjects.push_back(*it);

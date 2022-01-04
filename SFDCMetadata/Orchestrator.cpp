@@ -320,7 +320,7 @@ void orchestrator::addPermissionSetLicenseObjectsToUser(std::string pslid, std::
     auto thePS = permissionSetLicenseMap.find(pslid);
     
     if (theUser == userMap.end()) {
-        if (globals::verbose)
+        if (globals::veryverbose)
             std::cout << "addPermissionSetLicenseObjectsToUser: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
         return;
     }
@@ -340,7 +340,7 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
     auto thePS = permissionSetMap.find(psid);
     
     if (theUser == userMap.end()) {
-        if (globals::verbose)
+        if (globals::veryverbose)
             std::cout << "addPermissionSetObjectsToUser: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
         return;
     }
@@ -367,7 +367,7 @@ void orchestrator::addPermissionSetObjectsToUserFromPSG(std::string psgid, std::
     auto PSGit = permissionSetGroupMap.find(psgid);
     
     if (userit == userMap.end()) {
-        if (globals::verbose)
+        if (globals::veryverbose)
             std::cout << "addPermissionSetObjectsToUserFromPSG: user not found in user map, may be inactive, id =" << assigneeid << std::endl;
         return;
     }
@@ -402,7 +402,7 @@ int orchestrator::countOrgCustomObjects(const std::string &xmlBuffer) const {
    for (xml_node<> *child = servernode; child; child = child->next_sibling()) {
        xml_node<> * name = child->first_node("fullName");
        if (name) {
-           if (endsWith(name->value(), "__c")) {
+           if (endsWith(name->value(), "__c") || endsWith(name->value(), "__mdt")) {
                std::string prefix = objectNamePrefix(name->value());
                if (prefix.size() == 0) {
                    if (globals::verbose)
@@ -499,6 +499,24 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
             }
         }
     }// end for userPermissions
+    
+    xml_node<> * mdtnode = node->first_node("customMetadataTypeAccesses");
+
+    for (xml_node<> *child = mdtnode; child; child = child->next_sibling())
+    {
+       xml_node<> * name = child->first_node("name");
+       xml_node<> * enabled = child->first_node("enabled");
+
+       if (enabled) {
+           std::string isenabled = enabled->value();
+           if (isenabled.compare("true") == 0) {
+               if (name) {
+                   it->second.insertObject(name->value());
+               }
+           }
+       }
+    }    // end for customMetadataTypeAccesses
+
 }
 //
 //
@@ -523,8 +541,8 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
     
     xml_node<> * servernode = node->first_node("objectPermissions");
 
-   for (xml_node<> *child = servernode; child; child = child->next_sibling())
-   {
+    for (xml_node<> *child = servernode; child; child = child->next_sibling())
+    {
        xml_node<> * allowCreate = child->first_node("allowCreate");
        xml_node<> * allowDelete = child->first_node("allowDelete");
        xml_node<> * allowEdit = child->first_node("allowEdit");
@@ -585,6 +603,23 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
             }
         }
     }// end for userPermissions
+    
+    xml_node<> * mdtnode = node->first_node("customMetadataTypeAccesses");
+
+    for (xml_node<> *child = mdtnode; child; child = child->next_sibling())
+    {
+       xml_node<> * name = child->first_node("name");
+       xml_node<> * enabled = child->first_node("enabled");
+
+       if (enabled) {
+           std::string isenabled = enabled->value();
+           if (isenabled.compare("true") == 0) {
+               if (name) {
+                   it->second.insertObject(name->value());
+               }
+           }
+       }
+    }    // end for customMetadataTypeAccesses
 
 }
 //
@@ -1322,7 +1357,7 @@ bool orchestrator::run() {
     // output csvs
     //
     //
-    std::cout << "Generating CSV files ... " << u << std::endl;
+    std::cout << "Generating CSV files ... " << std::endl;
     
     outputusercsv();
     

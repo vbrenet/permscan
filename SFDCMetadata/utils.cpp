@@ -192,18 +192,19 @@ bool endsWith(const std::string &mainStr, const std::string &toMatch)
 //
 std::string objectNamePrefix (const std::string &objectName) {
     std::string prefix {};
+    std:: string stripped = objectName;
     
-    std::size_t index = objectName.find("__");
-    if (index != std::string::npos) {
-        // check that it is not the trailing __c
-        std::size_t trailing = objectName.find("__c", index+2);
-        if (trailing == std::string::npos) {
-            // it was the trailing __c, so there is no prefix
-        }
-        else {
-            prefix = objectName.substr(0,index);
-        }
+    if (endsWith(objectName, "__c")) {
+        stripped = objectName.substr(0, objectName.size()-3);
+    }
+    if (endsWith(objectName, "__mdt")) {
+        stripped = objectName.substr(0, objectName.size()-5);
     }
     
+    std::size_t index = stripped.find("__");
+    if (index != std::string::npos) {
+        prefix = stripped.substr(0,index);
+    }
+
     return prefix;
 }
