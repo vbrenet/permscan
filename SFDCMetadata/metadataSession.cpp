@@ -98,7 +98,14 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
         curl_easy_setopt(curl, CURLOPT_READDATA, body.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(body.c_str()));
         
+        if (globals::veryverbose) {
+            std::cout << "openMetadataSession before curl_easy_perform" << std::endl;
+        }
         res = curl_easy_perform(curl);
+        if (globals::veryverbose) {
+            std::cout << "openMetadataSession after curl_easy_perform" << std::endl;
+        }
+
         curl_slist_free_all(list); /* free the list  */
 
         curl_easy_cleanup(curl);
