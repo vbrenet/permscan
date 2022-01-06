@@ -219,9 +219,15 @@ bool metadataSession::call(const std::string theaction, const std::string thebod
         curl_easy_setopt(curl, CURLOPT_READDATA, body.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(body.c_str()));
         
+        if (globals::veryverbose) {
+            std::cout << "metadataSession::call before curl_easy_perform" << std::endl;
+        }
+
         res = curl_easy_perform(curl);
         curl_slist_free_all(list); /* free the list  */
-
+        if (globals::veryverbose) {
+            std::cout << "metadataSession::call after curl_easy_perform" << std::endl;
+        }
     }
     else
         return false;
