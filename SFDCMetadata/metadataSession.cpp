@@ -108,7 +108,6 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
 
         curl_slist_free_all(list); /* free the list  */
 
-        curl_easy_cleanup(curl);
     }
     else
         return false;
@@ -150,6 +149,8 @@ bool metadataSession::openMetadataSession(bool isSandbox, const std::string user
         std::cout <<  "sessionid: " << sessionId << std::endl;
         std::cout <<  "serverurl: " << serverUrl << std::endl;
     }
+
+    curl_easy_cleanup(curl);
 
     return result;
 }
