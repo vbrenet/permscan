@@ -113,6 +113,10 @@ int main(int argc, const char * argv[]) {
         std::cerr << "config file not found or empty" << std::endl;
         exitWithSyntaxError();
     }
+    // lecture fichier des contract rules
+    if (!config::getContractRules(globals::workingDirectory + "/contractrules.xml")) {
+        std::cout << "Warning: contractrules.xml file not found or empty" << std::endl;
+    }
 
     // if verbose, print custom object authorizations
     if (globals::verbose) {

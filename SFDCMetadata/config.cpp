@@ -9,6 +9,7 @@
 #include "config.hpp"
 #include <iostream>
 #include <fstream>
+#include "rapidxml/rapidxml.hpp"
 //
 //
 std::string config::username;
@@ -21,6 +22,10 @@ std::string config::apiversion;
 int config::defaultAuthorizedObjectNumber {0};
 std::map<std::string,int> config::pslicenseauthorizationsmap;
 std::map<std::string,int> config::licenseauthorizationsmap;
+
+contractRule config::defaultContractRules {};
+std::map<std::string,contractRule> config::pslicenseContractRules;
+
 
 bool config::isASandbox {false};
 bool config::dsisASandbox {false};
@@ -179,6 +184,26 @@ bool config::getConfig(const std::string filename) {
     return (nbline > 0);
 }
 //
+//
+//TB COMPLETED
+//
+bool config::getContractRules(const std::string filename) {
+    std::ifstream ifs(filename);
+
+    std::string content( (std::istreambuf_iterator<char>(ifs) ),
+                           (std::istreambuf_iterator<char>()    ) );
+    
+    
+    using namespace rapidxml;
+    xml_document<> document;
+    document.parse<0>((char *)content.c_str());
+    
+    xml_node<> *node = document.first_node("Rules");
+    
+    xml_node<> * defaultnode = node->first_node("default");
+
+    return true;
+}
 //
 //
 bool config::checkConfig() {

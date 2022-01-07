@@ -13,6 +13,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "contractRule.hpp"
 
 
 class config {
@@ -55,7 +56,12 @@ private:
     static std::map<std::string,int> pslicenseauthorizationsmap;
     static std::map<std::string,int> licenseauthorizationsmap;
     //
+    //
+    static contractRule defaultContractRules;
+    static std::map<std::string,contractRule> pslicenseContractRules;
+
     //  dataset org access parameters
+    //
     static std::string dsclientid;
     static std::string dsclientsecret;
     static std::string dsdomain;
@@ -76,6 +82,7 @@ private:
 public:
     
     static bool getConfig(const std::string filename);
+    static bool getContractRules(const std::string filename);
     static void getAttributeList(const std::string dirname, const std::string object, std::vector<std::string>&);
     //
     //  config accessors
