@@ -202,6 +202,25 @@ bool config::getContractRules(const std::string filename) {
     
     xml_node<> * defaultnode = node->first_node("default");
 
+    xml_node<>* forbiddenObject = defaultnode->first_node("forbiddenObject");
+
+    auto it1 = defaultContractRules.getForbiddenObjects();
+    while(forbiddenObject) {
+        std::string objectName = forbiddenObject->value();
+        it1.push_back(objectName);
+        forbiddenObject = forbiddenObject->next_sibling("forbiddenObject");
+    }
+    
+    xml_node<>* forbiddenFeature = defaultnode->first_node("forbiddenFeature");
+
+    auto it2 = defaultContractRules.getForbiddenFeatures();
+    while(forbiddenFeature) {
+        std::string featureName = forbiddenFeature->value();
+        it2.push_back(featureName);
+        forbiddenFeature = forbiddenFeature->next_sibling("forbiddenFeature");
+    }
+
+    
     return true;
 }
 //
