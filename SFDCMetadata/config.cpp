@@ -185,7 +185,6 @@ bool config::getConfig(const std::string filename) {
 }
 //
 //
-//TB COMPLETED
 //
 bool config::getContractRules(const std::string filename) {
     std::ifstream ifs(filename);
@@ -220,9 +219,35 @@ bool config::getContractRules(const std::string filename) {
         forbiddenFeature = forbiddenFeature->next_sibling("forbiddenFeature");
     }
 
-    
+    xml_node<> * pslicence = node->first_node("pslicense");
+    while(pslicence) {
+        std::string licensename {};
+        xml_node<> * licensenamenode = pslicence->first_node("name");
+        if (licensenamenode) {
+            licensename = licensenamenode->value();
+            contractRule rule {};
+            auto itobject = rule.getForbiddenObjects();
+            auto itfeature = rule.getForbiddenFeatures();
+            xml_node<>* forbiddenObject = pslicence->first_node("forbiddenObject");
+            while(forbiddenObject) {
+                std::string objectName = forbiddenObject->value();
+                itobject.push_back(objectName);
+                forbiddenObject = forbiddenObject->next_sibling("forbiddenObject");
+            }
+            xml_node<>* forbiddenFeature = pslicence->first_node("forbiddenFeature");
+            while(forbiddenFeature) {
+                std::string featureName = forbiddenFeature->value();
+                itfeature.push_back(featureName);
+                forbiddenFeature = forbiddenFeature->next_sibling("forbiddenFeature");
+            }
+            pslicenseContractRules.insert(std::pair<std::string,contractRule>(licensename, rule));
+        }
+        pslicence = pslicence->next_sibling("pslicense");
+    }
+
     return true;
 }
+//
 //
 //
 bool config::checkConfig() {
