@@ -6,6 +6,7 @@
 //  Copyright © 2021 Vincent Brenet. All rights reserved.
 //
 #include <iostream>
+#include <sstream>
 #include "salesforceUser.hpp"
 #include "utils.hpp"
 #include "config.hpp"
@@ -31,7 +32,10 @@ bool salesforceUser::isCompliant() const {
 bool salesforceUser::computeComplianceStatus() {
     complianceStatus = nbCustomObjects() <= maxcustomobjects;
     if (!complianceStatus) {
-        nonComplianceReason = "Too much custom objects";
+        std::stringstream reason;
+        reason << "Too Much Custom Objects: " << nbCustomObjects() << " vs " << maxcustomobjects << " permitted";
+        nonComplianceReason = reason.str();
+        nonComplianceCode = "TooMuchCustomObjects";
     }
     else {
         // search permissionSetLicenses matching contract rules
@@ -43,25 +47,92 @@ bool salesforceUser::computeComplianceStatus() {
             pslicenseToSearch = itpscontractrules->first;
         }
         
-        bool found {false};
-        for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) {
-            found = ((*it).compare(pslicenseToSearch) == 0);
-            if (found)
-                break;
-        }
+        bool found = std::find(permissionSetLicenses.begin(), permissionSetLicenses.end(), pslicenseToSearch) != permissionSetLicenses.end();
+
         if (found) {
-            
+            auto psrules = itpscontractrules->second;
+            auto itobj = psrules.getForbiddenObjects();
+            // 1- search forbidden objects
+            for (auto it = itobj.begin(); it != itobj.end(); ++it) {
+                std::string forbiddenobjecttosearch = *it;
+                // search in the user objects
+                if (allPermittedObjects.find(forbiddenobjecttosearch) != allPermittedObjects.end()) {
+                    // user has access to the object
+                    std::stringstream reason;
+                    reason << "Forbidden Object for this license: " << forbiddenobjecttosearch;
+                    nonComplianceReason = reason.str();
+                    nonComplianceCode = "ForbiddenObject";
+                    complianceStatus = false;
+                    break;
+                }   // forbidden object found
+            }   // end for forbidden objects
+
+            // 2- search forbidden features
+            auto itforbiddenFeatures = psrules.getForbiddenFeatures();
+            for (auto it = itforbiddenFeatures.begin(); it != itforbiddenFeatures.end(); ++it) {
+                if ((*it).compare("Console") ==0) {
+                    if (consoleEnabled) {
+                        nonComplianceReason = "Console enabled not permitted for this license";
+                        nonComplianceCode = "ConsoleNotPermitted";
+                        complianceStatus = false;
+                        break;
+                    }
+                }
+                else if ((*it).compare("Forecast") ==0) {
+                    if (forecastEnabled) {
+                        nonComplianceReason = "Forecast enabled not permitted for this license";
+                        nonComplianceCode = "ForecastNotPermitted";
+                        complianceStatus = false;
+                        break;
+                    }
+                }
+            } // end for
+
         }
         else {
             // no matching ps license found : using default contract rules
+            
+            // 0- check if user has CPQ permission set license
+            bool hasCPQ = std::find(permissionSetLicenses.begin(), permissionSetLicenses.end(), "Salesforce CPQ License") != permissionSetLicenses.end();
+            
             // 1- search forbidden objects
             contractRule defaultRules = config::getContractRules();
             auto itforbiddenObjects = defaultRules.getForbiddenObjects();
             for (auto it = itforbiddenObjects.begin(); it != itforbiddenObjects.end(); ++it) {
                 std::string forbiddenobjecttosearch = *it;
-                
+                // search in the user objects
+                if (allPermittedObjects.find(forbiddenobjecttosearch) != allPermittedObjects.end()) {
+                    // user has access to the object
+                    if (hasCPQ && (forbiddenobjecttosearch.compare("SBQQ__Quote__c") ==0 || forbiddenobjecttosearch.compare("Contract") ==0)) {
+                        // user has access to the object because he/she has CPQ
+                    }
+                    else {
+                        std::stringstream reason;
+                        reason << "Forbidden Object for this license: " << forbiddenobjecttosearch;
+                        nonComplianceReason = reason.str();
+                        nonComplianceCode = "ForbiddenObject";
+                        complianceStatus = false;
+                        break;
+                    }
+                }   // forbidden object found
+            }   // end for forbidden objects
+            
+            // 2- at this stage there are no forbidden objects - now we search for forbidden features
+            auto itforbiddenFeatures = defaultRules.getForbiddenFeatures();
+            for (auto it = itforbiddenFeatures.begin(); it != itforbiddenFeatures.end(); ++it) {
+                if ((*it).compare("Console") ==0) {
+                    if (consoleEnabled) {
+                        nonComplianceReason = "Console enabled not permitted for this license";
+                        nonComplianceCode = "ConsoleNotPermitted";
+                        complianceStatus = false;
+                        break;
+                    }
+                }
+                else {
+                    // insert there future forbidden feature tests
+                }
             }
-        }
+        }   // end default contract rule
     }
     return complianceStatus;
 }

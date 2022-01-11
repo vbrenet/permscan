@@ -35,11 +35,13 @@ private:
     bool viewAllData;
     bool modifyAllData;
     bool forecastEnabled;
+    bool consoleEnabled;
     bool complianceStatus;
     std::string nonComplianceReason;
+    std::string nonComplianceCode;
 
 public:
-    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p, const std::string fo) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;forecastEnabled=getBooleanValue(fo);}
+    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p, const std::string fo) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;forecastEnabled=getBooleanValue(fo);consoleEnabled=false;}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
     const std::string getFirstName() const {return firstname;}
@@ -61,6 +63,7 @@ public:
     bool isModifyAllData() const {return modifyAllData;}
     bool getComplianceStatus() const {return complianceStatus;}
     const std::string getNonComplianceReason() const {return nonComplianceReason;}
+    const std::string getNonComplianceCode() const {return nonComplianceCode;}
     //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
@@ -68,6 +71,7 @@ public:
     void insertPermissionSetLicense(const std::string pslicence) {permissionSetLicenses.push_back(pslicence);}
     void setViewAllData() {viewAllData=true;}
     void setModifyAllData() {modifyAllData=true;}
+    void setConsoleEnabled() {consoleEnabled=true;}
 
     //
     bool computeComplianceStatus();

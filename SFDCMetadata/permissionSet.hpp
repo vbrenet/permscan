@@ -24,6 +24,7 @@ private:
     std::vector<std::string> standardobjects;
     bool viewAllData;
     bool modifyAllData;
+    bool lightningConsole;
 
 public:
     permissionSet(const std::string i, const std::string n) : name {n}, id {i} {viewAllData=false;modifyAllData=false;}
@@ -37,9 +38,12 @@ public:
     long getNumberOfStandardObjects() const {return standardobjects.size();}
     bool isViewAllData() const {return viewAllData;}
     bool isModifyAllData() const {return modifyAllData;}
+    bool hasLightningConsole() const {return lightningConsole;}
     //
     void setViewAllData() {viewAllData=true;}
     void setModifyAllData() {modifyAllData=true;}
+    void setLightningConsole() {lightningConsole=true;}
+    
     void distributeObjects();
 };
 #endif /* permissionSet_hpp */

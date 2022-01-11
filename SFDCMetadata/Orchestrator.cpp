@@ -354,6 +354,8 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
         theUser->second.setModifyAllData();
     if (thePS->second.isViewAllData())
         theUser->second.setViewAllData();
+    if (thePS->second.hasLightningConsole())
+        theUser->second.setConsoleEnabled();
 
     auto theset = thePS->second.getobjects();
     for (auto itset = theset.begin(); itset != theset.end(); ++itset)
@@ -497,6 +499,13 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
                         std::cout << "Profile " << it->second.getName() << " ModifyAllData enabled" << std::endl;
                 }
             }
+            else if (permname.compare("LightningConsoleAllowedForUser") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setLightningConsole();
+                    if (globals::verbose)
+                        std::cout << "Profile " << it->second.getName() << " LightningConsoleAllowedForUser enabled" << std::endl;
+                }
+            }
         }
     }// end for userPermissions
     
@@ -599,6 +608,13 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
                     it->second.setModifyAllData();
                     if (globals::verbose)
                         std::cout << std::endl << "Permission set " << it->second.getName() << " ModifyAllData enabled" << std::endl;
+                }
+            }
+            else if (permname.compare("LightningConsoleAllowedForUser") == 0) {
+                if (isenabled.compare("true") == 0) {
+                    it->second.setLightningConsole();
+                    if (globals::verbose)
+                        std::cout << "Permission set " << it->second.getName() << " LightningConsoleAllowedForUser enabled" << std::endl;
                 }
             }
         }
@@ -1213,6 +1229,8 @@ bool orchestrator::run() {
                 it->second.setViewAllData();
             if (prfit->second.isModifyAllData())
                 it->second.setModifyAllData();
+            if (prfit->second.hasLightningConsole())
+                it->second.setConsoleEnabled();
             auto theset = prfit->second.getobjects();
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 it->second.insertPermittedObject(*itset);
