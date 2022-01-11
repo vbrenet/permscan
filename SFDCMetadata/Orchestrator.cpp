@@ -847,6 +847,7 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
         std::string firstname {};
         std::string lastname {};
         std::string theprofile {};
+        std::string forecast {};
 
         xml_node<> * objectnode = child->first_node("Id");
         if (objectnode) {
@@ -873,12 +874,18 @@ bool orchestrator::initializeUsers(const std::string& xmlBuffer, std::string& ne
             theprofile = profilenode->value();
         }
         
+        xml_node<> * forecastnode = child->first_node("ForecastEnabled");
+        if (forecastnode) {
+            forecast = forecastnode->value();
+        }
+
+        
         if (objectnode) {
            if (userMap.find(id) != userMap.end()) {
                std::cerr << "id already exist in user map " << child->value() << std::endl;
                break;
            }
-           userMap.insert ( std::pair<std::string,salesforceUser>(id, {id, firstname, lastname, username, theprofile}) );
+           userMap.insert ( std::pair<std::string,salesforceUser>(id, {id, firstname, lastname, username, theprofile, forecast}) );
            nbinsert++;
         }
         

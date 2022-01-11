@@ -28,6 +28,46 @@ bool salesforceUser::isCompliant() const {
 //
 //
 //
+bool salesforceUser::computeComplianceStatus() {
+    complianceStatus = nbCustomObjects() <= maxcustomobjects;
+    if (!complianceStatus) {
+        nonComplianceReason = "Too much custom objects";
+    }
+    else {
+        // search permissionSetLicenses matching contract rules
+        
+        // limitation : get only the first contract rule
+        std::string pslicenseToSearch {};
+        auto itpscontractrules = config::getpsLicenseContractRules().begin();
+        if (itpscontractrules != config::getpsLicenseContractRules().end()) {
+            pslicenseToSearch = itpscontractrules->first;
+        }
+        
+        bool found {false};
+        for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) {
+            found = ((*it).compare(pslicenseToSearch) == 0);
+            if (found)
+                break;
+        }
+        if (found) {
+            
+        }
+        else {
+            // no matching ps license found : using default contract rules
+            // 1- search forbidden objects
+            contractRule defaultRules = config::getContractRules();
+            auto itforbiddenObjects = defaultRules.getForbiddenObjects();
+            for (auto it = itforbiddenObjects.begin(); it != itforbiddenObjects.end(); ++it) {
+                std::string forbiddenobjecttosearch = *it;
+                
+            }
+        }
+    }
+    return complianceStatus;
+}
+//
+//
+//
 void salesforceUser::computeMaxCustomObjects() {
     
     maxcustomobjects = config::getDefaultAuthorizedObjectNumber();

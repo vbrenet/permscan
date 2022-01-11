@@ -97,6 +97,8 @@ public:
     static int getDefaultAuthorizedObjectNumber() {return defaultAuthorizedObjectNumber;};
     static const std::map<std::string,int>& getpslicensemap() {return pslicenseauthorizationsmap;};
     static const std::map<std::string,int>& getlicensemap() {return licenseauthorizationsmap;};
+    static const std::map<std::string,contractRule>& getpsLicenseContractRules() {return pslicenseContractRules;};
+    static const contractRule& getContractRules() {return defaultContractRules;};
 
     static bool isSandbox() {return isASandbox;};
     //

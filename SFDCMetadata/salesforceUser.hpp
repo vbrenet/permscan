@@ -15,6 +15,7 @@
 #include <set>
 #include <vector>
 #include "permissionSetLicense.hpp"
+#include "utils.hpp"
 
 class salesforceUser {
 private:
@@ -33,9 +34,12 @@ private:
     int maxcustomobjects;
     bool viewAllData;
     bool modifyAllData;
+    bool forecastEnabled;
+    bool complianceStatus;
+    std::string nonComplianceReason;
 
 public:
-    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;}
+    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p, const std::string fo) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;forecastEnabled=getBooleanValue(fo);}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
     const std::string getFirstName() const {return firstname;}
@@ -55,7 +59,9 @@ public:
     const long getPermissionSetLicenceNumber() const {return permissionSetLicenses.size();}
     bool isViewAllData() const {return viewAllData;}
     bool isModifyAllData() const {return modifyAllData;}
-   //
+    bool getComplianceStatus() const {return complianceStatus;}
+    const std::string getNonComplianceReason() const {return nonComplianceReason;}
+    //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
     void insertPermittedObject(const std::string o) {allPermittedObjects.insert(o);}
@@ -64,6 +70,7 @@ public:
     void setModifyAllData() {modifyAllData=true;}
 
     //
+    bool computeComplianceStatus();
     void computeMaxCustomObjects();
     void distributeObjects();
     void print(std::ofstream&);
