@@ -49,6 +49,8 @@ private:
     const void outputpermissionsetcsv();
     const void outputprofilecsv();
     bool insertDatasets();
+    void checkProfileForbiddendObjects(const std::string id);
+    void checkPSForbiddendObjects(const std::string id);
 public:
     bool run();
 };

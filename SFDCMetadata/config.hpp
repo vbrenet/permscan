@@ -114,5 +114,7 @@ public:
     static bool getDsIsASandbox() {return dsisASandbox;};
 
     static bool checkConfig();
+    
+    static void printContractRules();
 };
 #endif /* config_hpp */

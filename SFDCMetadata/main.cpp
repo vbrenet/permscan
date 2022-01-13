@@ -117,6 +117,9 @@ int main(int argc, const char * argv[]) {
     if (!config::getContractRules(globals::workingDirectory + "/contractrules.xml")) {
         std::cout << "Warning: contractrules.xml file not found or empty" << std::endl;
     }
+    
+    if (globals::verbose)
+        config::printContractRules();
 
     // if verbose, print custom object authorizations
     if (globals::verbose) {

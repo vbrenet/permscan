@@ -48,5 +48,7 @@ public:
     void setViewAllData() {viewAllData=true;}
     void setModifyAllData() {modifyAllData=true;}
     void setLightningConsole() {lightningConsole=true;}
+    //
+    bool hasObject(const std::string o) const {return (objects.find(o) != objects.end());}
 };
 #endif /* profile_hpp */

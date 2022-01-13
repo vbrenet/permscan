@@ -17,6 +17,7 @@
 #include "globals.hpp"
 #include "dataset.hpp"
 #include "datasetJson.hpp"
+#include "contractRule.hpp"
 //
 //
 //
@@ -530,6 +531,35 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
 //
 //
 //
+void orchestrator::checkProfileForbiddendObjects(const std::string id) {
+    auto profile = profileMap.find(id);
+    
+    if (profile == profileMap.end()) {
+        std::cerr << "checkProfileForbiddendObjects: id not found in Map " << id << std::endl;
+        return;
+    }
+    // check default forbidden objects
+    contractRule defaultRules = config::getContractRules();
+    auto forbiddenObjects = defaultRules.getForbiddenObjects();
+    for (auto it = forbiddenObjects.begin(); it != forbiddenObjects.end(); ++it ) {
+        if (profile->second.hasObject(*it)) {
+            std::cout << "Profile: " << profile->second.getName() << " has a forbidden object: " << *it << std::endl;
+        }
+    }
+    // check ps license forbidden objects
+    auto rules = config::getpsLicenseContractRules();
+    for (auto it = rules.begin(); it != rules.end(); ++it) {
+        auto forbiddenObjects = it->second.getForbiddenObjects();
+        for (auto it1 = forbiddenObjects.begin(); it1 != forbiddenObjects.end(); ++it1 ) {
+            if (profile->second.hasObject(*it1)) {
+                std::cout << "Profile: " << profile->second.getName() << " has a forbidden object: " << *it1 << std::endl;
+            }
+        }
+    }
+}
+//
+//
+//
 void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& xmlBuffer) {
     
     auto it = permissionSetMap.find(id);
@@ -637,6 +667,35 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
        }
     }    // end for customMetadataTypeAccesses
 
+}
+//
+//
+//
+void orchestrator::checkPSForbiddendObjects(const std::string id) {
+    auto ps = permissionSetMap.find(id);
+    
+    if (ps == permissionSetMap.end()) {
+        std::cerr << "checkPSForbiddendObjects: id not found in Map " << id << std::endl;
+        return;
+    }
+    // check default forbidden objects
+    contractRule defaultRules = config::getContractRules();
+    auto forbiddenObjects = defaultRules.getForbiddenObjects();
+    for (auto it = forbiddenObjects.begin(); it != forbiddenObjects.end(); ++it ) {
+        if (ps->second.hasObject(*it)) {
+            std::cout << "Permission set: " << ps->second.getName() << " has a forbidden object: " << *it << std::endl;
+        }
+    }
+    // check ps license forbidden objects
+    auto rules = config::getpsLicenseContractRules();
+    for (auto it = rules.begin(); it != rules.end(); ++it) {
+        auto forbiddenObjects = it->second.getForbiddenObjects();
+        for (auto it1 = forbiddenObjects.begin(); it1 != forbiddenObjects.end(); ++it1 ) {
+            if (ps->second.hasObject(*it1)) {
+                std::cout << "Permission set: " << ps->second.getName() << " has a forbidden object: " << *it1 << std::endl;
+            }
+        }
+    }
 }
 //
 //
@@ -1159,6 +1218,8 @@ bool orchestrator::run() {
             std::cerr << "call error" << std::endl;
         
         addObjectsToProfile(it->first, result);
+        if (globals::verbose)
+            checkProfileForbiddendObjects(it->first);
     }
 
     std::cout << std::endl;
@@ -1187,6 +1248,8 @@ bool orchestrator::run() {
             std::cerr << "call error" << std::endl;
         
         addObjectsToPermissionSet(it->first, result);
+        if (globals::verbose)
+            checkPSForbiddendObjects(it->first);
     }
 
     std::cout << std::endl;

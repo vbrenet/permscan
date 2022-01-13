@@ -203,19 +203,17 @@ bool config::getContractRules(const std::string filename) {
 
     xml_node<>* forbiddenObject = defaultnode->first_node("forbiddenObject");
 
-    auto it1 = defaultContractRules.getForbiddenObjects();
     while(forbiddenObject) {
         std::string objectName = forbiddenObject->value();
-        it1.push_back(objectName);
+        defaultContractRules.addObject(objectName);
         forbiddenObject = forbiddenObject->next_sibling("forbiddenObject");
     }
     
     xml_node<>* forbiddenFeature = defaultnode->first_node("forbiddenFeature");
 
-    auto it2 = defaultContractRules.getForbiddenFeatures();
     while(forbiddenFeature) {
         std::string featureName = forbiddenFeature->value();
-        it2.push_back(featureName);
+        defaultContractRules.addFeature(featureName);
         forbiddenFeature = forbiddenFeature->next_sibling("forbiddenFeature");
     }
 
@@ -226,18 +224,16 @@ bool config::getContractRules(const std::string filename) {
         if (licensenamenode) {
             licensename = licensenamenode->value();
             contractRule rule {};
-            auto itobject = rule.getForbiddenObjects();
-            auto itfeature = rule.getForbiddenFeatures();
             xml_node<>* forbiddenObject = pslicence->first_node("forbiddenObject");
             while(forbiddenObject) {
                 std::string objectName = forbiddenObject->value();
-                itobject.push_back(objectName);
+                rule.addObject(objectName);
                 forbiddenObject = forbiddenObject->next_sibling("forbiddenObject");
             }
             xml_node<>* forbiddenFeature = pslicence->first_node("forbiddenFeature");
             while(forbiddenFeature) {
                 std::string featureName = forbiddenFeature->value();
-                itfeature.push_back(featureName);
+                rule.addFeature(featureName);
                 forbiddenFeature = forbiddenFeature->next_sibling("forbiddenFeature");
             }
             pslicenseContractRules.insert(std::pair<std::string,contractRule>(licensename, rule));
@@ -268,4 +264,16 @@ bool config::checkConfig() {
      }
 
     return status;
+}
+//
+//
+//
+void config::printContractRules() {
+    std::cout << "***Default contract rules***" << std::endl;
+    defaultContractRules.printRule();
+    for (auto it=pslicenseContractRules.begin(); it != pslicenseContractRules.end(); ++it) {
+        std::cout << "***" << it->first << " contract rules***" << std::endl;
+        it->second.printRule();
+    }
+    std::cout << std::endl;
 }

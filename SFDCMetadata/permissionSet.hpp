@@ -45,5 +45,7 @@ public:
     void setLightningConsole() {lightningConsole=true;}
     
     void distributeObjects();
+    bool hasObject(const std::string o) const {return (objects.find(o) != objects.end());}
+
 };
 #endif /* permissionSet_hpp */
