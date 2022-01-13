@@ -1361,6 +1361,7 @@ bool orchestrator::run() {
     for (auto it = userMap.begin(); it != userMap.end(); ++it) {
         it->second.computeMaxCustomObjects();
         it->second.distributeObjects();
+        it->second.computeComplianceStatus();
         it->second.print(ofs);
     }
 
@@ -1372,7 +1373,8 @@ bool orchestrator::run() {
         if (!it->second.isCompliant()) {
             u++;
             std::cout << it->second.getFullName() << " profile: " << it->second.getProfileName()
-            << " : " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl;
+            << " : " << it->second.nbCustomObjects() << " custom objects " << " vs. authorized: " << it->second.getMaxCustomObjects() << std::endl
+            << "Code :" << it->second.getNonComplianceCode() << " Reason " << it->second.getNonComplianceReason() << std::endl;
         }
     }
     std::cout << "*** Total active not compliant users: " << u << std::endl;

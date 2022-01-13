@@ -24,7 +24,7 @@ const long salesforceUser::nbCustomObjects() const {
 //
 //
 bool salesforceUser::isCompliant() const {
-    return nbCustomObjects() <= maxcustomobjects;
+    return complianceStatus;
 }
 //
 //
@@ -183,12 +183,18 @@ void salesforceUser::distributeObjects() {
 //
 //
 void salesforceUser::print(std::ofstream& output) {
-    output << std::endl << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
-    output << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
-    for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) output << *it << " "; output << std::endl;
+    output << std::endl
+    << "********************************************************************************************************************************************************************"
+    << std::endl << getFirstName() << " " << getLastName() << std::endl
+    << id << ": " << username << " -profile id: " << profileid << " -profile name: " << profilename << " -license: " << licensename << std::endl;
     output << "Max authorized objects: " << getMaxCustomObjects() << std::endl;
     output << std::boolalpha << "View all ? " << isViewAllData() << " Modify all ? " << isModifyAllData() << std::endl;
     output << "Compliant ? " << std::boolalpha << isCompliant() << std::endl;
+    if (!isCompliant()) {
+        output << "Code reason : " << getNonComplianceCode() << " : " << getNonComplianceReason() << std::endl;
+    }
+    output << "Total Permission Set Licenses : " << permissionSetLicenses.size() << std::endl;
+    for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) output << *it << " "; output << std::endl;
     output << "Total objects : " << nbCustomObjects() + packagedobjects.size() + standardobjects.size() << std::endl;
     output << "Custom objects : " << nbCustomObjects() << std::endl;
     for (auto it = customobjects.begin(); it != customobjects.end(); ++it) output << *it << " "; output << std::endl;

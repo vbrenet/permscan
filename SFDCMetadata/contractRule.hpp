@@ -26,5 +26,6 @@ public:
     void addObject(std::string o) {forbiddenObjects.push_back(o);}
     void addFeature(std::string f) {forbiddenFeatures.push_back(f);}
     //
+    void printRule() const;
 };
 #endif /* contractRule_hpp */
