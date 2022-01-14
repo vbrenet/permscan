@@ -1258,7 +1258,7 @@ bool orchestrator::run() {
     //
     //
     std::cout << "Reading active users ..." << std::endl;
-    restQuery("?q=SELECT+ID+,+Username+,+Firstname+,+Lastname+,+ProfileId+FROM+User+where+isactive+=+true", readBuffer);
+    restQuery("?q=SELECT+ID+,+Username+,+Firstname+,+Lastname+,+ProfileId+,+ForecastEnabled+FROM+User+where+isactive+=+true", readBuffer);
         
     nextRecordsToRead = initializeUsers(readBuffer, nexturl);
     
