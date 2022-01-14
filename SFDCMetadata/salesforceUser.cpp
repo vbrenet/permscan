@@ -130,6 +130,14 @@ bool salesforceUser::computeComplianceStatus() {
                     complianceStatus = false;
                     break;
                 }
+                if ((*it).compare("Forecast") ==0) {
+                    if (forecastEnabled) {
+                        nonComplianceReason = "Forecast enabled not permitted for this license";
+                        nonComplianceCode = "ForecastNotPermitted";
+                        complianceStatus = false;
+                        break;
+                    }
+                }
             }   // end for forbidden features
         }   // end default rule analysis
     }
