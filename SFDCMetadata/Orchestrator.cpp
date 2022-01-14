@@ -110,7 +110,9 @@ const void orchestrator::outputusercsv() {
     ofs << "PackagedObjectNumber,";
     ofs << "CustomObjectNumber,";
     ofs << "MaxCustomObjects,";
-    ofs << "IsCompliant" << std::endl;
+    ofs << "IsCompliant,";
+    ofs << "NonComplianceCode";
+    ofs << std::endl;
     
     ofs << std::boolalpha;
     
@@ -130,7 +132,8 @@ const void orchestrator::outputusercsv() {
         ofs << it->second.nbPackagedObjects() << ",";
         ofs << it->second.nbCustomObjects() << ",";
         ofs << it->second.getMaxCustomObjects() << ",";
-        ofs << it->second.isCompliant();
+        ofs << it->second.isCompliant() << ",";
+        ofs << it->second.getNonComplianceCode();
         ofs << std::endl;
     }
     

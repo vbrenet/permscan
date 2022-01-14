@@ -144,8 +144,15 @@ void datasetJson::initUsersJson() {
     << "\"label\" : \"IsCompliant\","
     << "\"type\" : \"Text\","
     << "\"name\" : \"IsCompliant\""
-    << "}"
+    << "},"
     
+    << "{"
+    << "\"fullyQualifiedName\" : \"NonComplianceCode\","
+    << "\"label\" : \"NonComplianceCode\","
+    << "\"type\" : \"Text\","
+    << "\"name\" : \"NonComplianceCode\""
+    << "}"
+
     << "]"
     << "} ]"
     << "}"

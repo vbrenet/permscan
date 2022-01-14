@@ -41,7 +41,7 @@ private:
     std::string nonComplianceCode;
 
 public:
-    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p, const std::string fo) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;forecastEnabled=getBooleanValue(fo);}
+    salesforceUser(const std::string i, const std::string f, const std::string l, const std::string u, const std::string p, const std::string fo) : username {u}, firstname {f}, lastname {l}, id {i}, profileid {p} {viewAllData=false;modifyAllData=false;forecastEnabled=getBooleanValue(fo);nonComplianceCode="Compliant";}
     //  accessors
     const std::string getFullName() const {return firstname + " " + lastname;}
     const std::string getFirstName() const {return firstname;}
