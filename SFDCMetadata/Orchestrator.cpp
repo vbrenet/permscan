@@ -1199,7 +1199,7 @@ bool orchestrator::run() {
     int j {0};
     for (auto it = profileMap.begin(); it != profileMap.end(); ++it) {
         j++;
-        std::cout << "\r" << j << " of " << profileMap.size() << std::flush;
+        std::cout << "\r" << j << " of " << profileMap.size() << " " << it->second.getName() << std::flush;
         std::string result;
         std::string thebody = "<soapenv:Body>";
         thebody +="<met:readMetadata>";
