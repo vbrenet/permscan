@@ -27,6 +27,7 @@ private:
     std::string profilename;
     std::string licensename;
     std::vector<std::string> permissionSetLicenses;
+    std::set<std::string> allPermissions;
     std::set<std::string> allPermittedObjects;
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
@@ -51,6 +52,7 @@ public:
     const std::string getProfile() const {return profileid;}
     const std::string getProfileName() const {return profilename;}
     const std::string getLicenseName() const {return licensename;}
+    const std::set<std::string>& getPermissions() const {return allPermissions;}
     const std::set<std::string>& getPermittedObjects() const {return allPermittedObjects;}
     const long nbObjects() {return nbCustomObjects() + nbPackagedObjects() + nbStandardObjects();}
     const long nbCustomObjects() const;
@@ -67,6 +69,7 @@ public:
     //
     void setProfileName(const std::string name) {profilename=name;}
     void setLicenseName(const std::string name) {licensename=name;}
+    void insertPermission(const std::string p) {allPermissions.insert(p);}
     void insertPermittedObject(const std::string o) {allPermittedObjects.insert(o);}
     void insertPermissionSetLicense(const std::string pslicence) {permissionSetLicenses.push_back(pslicence);}
     void setViewAllData() {viewAllData=true;}

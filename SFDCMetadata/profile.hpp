@@ -19,6 +19,7 @@ private:
     std::string name;
     std::string id;
     std::string licenceId;
+    std::set<std::string> permissions;
     std::set<std::string> objects;
     std::vector<std::string> customobjects;
     std::vector<std::string> packagedobjects;
@@ -33,6 +34,7 @@ public:
     const std::string getId() const {return id;}
     const std::string getLicenceId() const {return licenceId;}
     const std::set<std::string>& getobjects() const {return objects;}
+    const std::set<std::string>& getpermissions() const {return permissions;}
     long getTotalNumberOfObjects() const {return objects.size();}
     long getNumberOfCustomObjects() const {return customobjects.size();}
     long getNumberOfPackagedObjects() const {return packagedobjects.size();}
@@ -42,6 +44,7 @@ public:
     bool hasLightningConsole() const {return lightningConsole;}
     //
     void insertObject(const std::string o) {objects.insert(o);}
+    void insertPermission(const std::string p) {permissions.insert(p);}
     //
     void distributeObjects();
     //
@@ -50,5 +53,6 @@ public:
     void setLightningConsole() {lightningConsole=true;}
     //
     bool hasObject(const std::string o) const {return (objects.find(o) != objects.end());}
+    bool hasPermission(const std::string p) const {return (permissions.find(p) != permissions.end());}
 };
 #endif /* profile_hpp */

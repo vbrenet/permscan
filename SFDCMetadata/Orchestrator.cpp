@@ -361,6 +361,9 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
     auto theset = thePS->second.getobjects();
     for (auto itset = theset.begin(); itset != theset.end(); ++itset)
         theUser->second.insertPermittedObject(*itset);
+    auto perms = thePS->second.getpermissions();
+    for (auto itset = perms.begin(); itset != perms.end(); ++itset)
+        theUser->second.insertPermission(*itset);
 }
 //
 //
@@ -486,6 +489,10 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
             std::string isenabled {};
             if (enabled)
                 isenabled = enabled->value();
+            if (isenabled.compare("true") == 0) {
+                // add permission in the profile set
+                it->second.insertPermission(permname);
+            }
             if (permname.compare("ViewAllData") == 0) {
                 if (isenabled.compare("true") == 0) {
                     it->second.setViewAllData();
@@ -498,13 +505,6 @@ void orchestrator::addObjectsToProfile(std::string id, const std::string& xmlBuf
                     it->second.setModifyAllData();
                     if (globals::verbose)
                         std::cout << "Profile " << it->second.getName() << " ModifyAllData enabled" << std::endl;
-                }
-            }
-            else if (permname.compare("LightningConsoleAllowedForUser") == 0) {
-                if (isenabled.compare("true") == 0) {
-                    it->second.setLightningConsole();
-                    if (globals::verbose)
-                        std::cout << "Profile " << it->second.getName() << " LightningConsoleAllowedForUser enabled" << std::endl;
                 }
             }
         }
@@ -626,25 +626,22 @@ void orchestrator::addObjectsToPermissionSet(std::string id, const std::string& 
             std::string isenabled {};
             if (enabled)
                 isenabled = enabled->value();
+            if (isenabled.compare("true") == 0) {
+                // add permission in the profile set
+                it->second.insertPermission(permname);
+            }
             if (permname.compare("ViewAllData") == 0) {
                 if (isenabled.compare("true") == 0) {
                     it->second.setViewAllData();
                     if (globals::verbose)
-                        std::cout << std::endl << "Permission set " << it->second.getName() << " viewAllData enabled" << std::endl;
+                        std::cout << "Permission Set " << it->second.getName() << " viewAllData enabled" << std::endl;
                 }
             }
             else if (permname.compare("ModifyAllData") == 0) {
                 if (isenabled.compare("true") == 0) {
                     it->second.setModifyAllData();
                     if (globals::verbose)
-                        std::cout << std::endl << "Permission set " << it->second.getName() << " ModifyAllData enabled" << std::endl;
-                }
-            }
-            else if (permname.compare("LightningConsoleAllowedForUser") == 0) {
-                if (isenabled.compare("true") == 0) {
-                    it->second.setLightningConsole();
-                    if (globals::verbose)
-                        std::cout << "Permission set " << it->second.getName() << " LightningConsoleAllowedForUser enabled" << std::endl;
+                        std::cout << "Permission Set " << it->second.getName() << " ModifyAllData enabled" << std::endl;
                 }
             }
         }
@@ -1298,7 +1295,11 @@ bool orchestrator::run() {
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 it->second.insertPermittedObject(*itset);
             }
-        // license
+            auto perms = prfit->second.getpermissions();
+            for (auto itset = perms.begin(); itset != perms.end(); ++itset) {
+                it->second.insertPermission(*itset);
+            }
+       // license
             std::string licenseid = prfit->second.getLicenceId();
             auto licenseit = licenseMap.find(licenseid);
             if (licenseit != licenseMap.end()) {
