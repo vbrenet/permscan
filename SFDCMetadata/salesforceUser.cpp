@@ -71,15 +71,15 @@ bool salesforceUser::computeComplianceStatus() {
                         break;  // we can leave because one broke rule is enough
                     auto itforbiddenFeatures = psrules.getForbiddenFeatures();
                     for (auto it = itforbiddenFeatures.begin(); it != itforbiddenFeatures.end(); ++it) {
-                        if ((*it).compare("Console") ==0) {
-                            if (consoleEnabled) {
-                                nonComplianceReason = "Console enabled not permitted for this license";
-                                nonComplianceCode = "ConsoleNotPermitted";
-                                complianceStatus = false;
-                                break;
-                            }
+                        if (allPermissions.find(*it) != allPermissions.end()) {
+                            nonComplianceCode = "PermissionNotAllowed";
+                            std::stringstream reason;
+                            reason << "Permission " << *it << " not allowed for this license: " << *ituserpslicense;
+                            nonComplianceReason = reason.str();
+                            complianceStatus = false;
+                            break;
                         }
-                        else if ((*it).compare("Forecast") ==0) {
+                        if ((*it).compare("Forecast") ==0) {
                             if (forecastEnabled) {
                                 nonComplianceReason = "Forecast enabled not permitted for this license";
                                 nonComplianceCode = "ForecastNotPermitted";
@@ -122,16 +122,13 @@ bool salesforceUser::computeComplianceStatus() {
             // 2- at this stage there are no forbidden objects - now we search for forbidden features
             auto itforbiddenFeatures = defaultRules.getForbiddenFeatures();
             for (auto it = itforbiddenFeatures.begin(); it != itforbiddenFeatures.end(); ++it) {
-                if ((*it).compare("Console") ==0) {
-                    if (consoleEnabled) {
-                        nonComplianceReason = "Console enabled not permitted for this license";
-                        nonComplianceCode = "ConsoleNotPermitted";
-                        complianceStatus = false;
-                        break;
-                    }
-                }
-                else {
-                    // insert there future forbidden feature tests
+                if (allPermissions.find(*it) != allPermissions.end()) {
+                    nonComplianceCode = "PermissionNotAllowed";
+                    std::stringstream reason;
+                    reason << "Permission " << *it << " not allowed in default rules";
+                    nonComplianceReason = reason.str();
+                    complianceStatus = false;
+                    break;
                 }
             }   // end for forbidden features
         }   // end default rule analysis

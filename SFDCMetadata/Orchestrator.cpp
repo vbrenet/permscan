@@ -355,8 +355,6 @@ void orchestrator::addPermissionSetObjectsToUser(std::string psid, std::string a
         theUser->second.setModifyAllData();
     if (thePS->second.isViewAllData())
         theUser->second.setViewAllData();
-    if (thePS->second.hasLightningConsole())
-        theUser->second.setConsoleEnabled();
 
     auto theset = thePS->second.getobjects();
     for (auto itset = theset.begin(); itset != theset.end(); ++itset)
@@ -1289,8 +1287,6 @@ bool orchestrator::run() {
                 it->second.setViewAllData();
             if (prfit->second.isModifyAllData())
                 it->second.setModifyAllData();
-            if (prfit->second.hasLightningConsole())
-                it->second.setConsoleEnabled();
             auto theset = prfit->second.getobjects();
             for (auto itset = theset.begin(); itset != theset.end(); ++itset) {
                 it->second.insertPermittedObject(*itset);
