@@ -39,8 +39,14 @@ bool salesforceUser::computeComplianceStatus() {
     }
     else {
         // 0- check if user has CPQ permission set license
-        bool hasCPQ = (std::find(permissionSetLicenses.begin(), permissionSetLicenses.end(), "Salesforce CPQ License") != permissionSetLicenses.end());
-
+        //bool hasCPQ = (std::find(permissionSetLicenses.begin(), permissionSetLicenses.end(), "Salesforce CPQ License") != permissionSetLicenses.end());
+        bool hasCPQ {false};
+        for (auto it = permissionSetLicenses.begin(); it != permissionSetLicenses.end(); ++it) {
+            if ((*it).compare("Salesforce CPQ License") == 0) {
+                hasCPQ = true;
+                break;
+            }
+        }
         // search user permissionSetLicenses matching contract rules
         for (auto itpsrules = config::getpsLicenseContractRules().begin(); itpsrules != config::getpsLicenseContractRules().end(); ++itpsrules) {
             for (auto ituserpslicense = permissionSetLicenses.begin(); ituserpslicense != permissionSetLicenses.end(); ++ituserpslicense) {
