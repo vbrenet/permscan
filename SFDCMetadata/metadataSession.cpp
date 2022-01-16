@@ -199,12 +199,14 @@ bool metadataSession::call(const std::string theaction, const std::string thebod
 
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-        
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip");
+
         // set header
         struct curl_slist *list = NULL;
         std::string action = "SOAPAction: " + theaction;
         list = curl_slist_append(list, action.c_str());
         list = curl_slist_append(list, "Content-Type: text/xml; charset=UTF-8");
+        list = curl_slist_append(list, "Accept-Encoding: gzip");
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
         //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
