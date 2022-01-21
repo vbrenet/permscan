@@ -76,6 +76,7 @@ public:
 
     //
     bool computeComplianceStatus();
+    bool computeComplianceStatusOld();
     void computeMaxCustomObjects();
     void distributeObjects();
     void print(std::ofstream&);

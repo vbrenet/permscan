@@ -17,7 +17,7 @@
 #include "datasetJson.hpp"
 //
 //
-const std::string version = "1.1.3";
+const std::string version = "1.2.0";
 //
 //
 //
