@@ -57,6 +57,15 @@ bool salesforceUser::computeComplianceStatus() {
                     // search forbidden objects
                     for (auto it = itobj.begin(); it != itobj.end(); ++it) {
                         std::string forbiddenobjecttosearch = *it;
+                        // check if user has view or modify all
+                        if (isViewAllData() || isModifyAllData()) {
+                            std::stringstream reason;
+                            reason << "Forbidden Object for " << *ituserpslicense << " license: " << forbiddenobjecttosearch << " and user has view or modify all";
+                            nonComplianceReason = reason.str();
+                            nonComplianceCode = "ForbiddenObjectAndViewOrModifyAll";
+                            complianceStatus = false;
+                            break;
+                        }
                         // search in the user objects
                         if (allPermittedObjects.find(forbiddenobjecttosearch) != allPermittedObjects.end()) {
                             // user has access to the object
@@ -109,6 +118,14 @@ bool salesforceUser::computeComplianceStatus() {
             auto itforbiddenObjects = defaultRules.getForbiddenObjects();
             for (auto it = itforbiddenObjects.begin(); it != itforbiddenObjects.end(); ++it) {
                 std::string forbiddenobjecttosearch = *it;
+                if (isViewAllData() || isModifyAllData()) {
+                    std::stringstream reason;
+                    reason << "Forbidden Object for for Sales & Service: " << forbiddenobjecttosearch << " and user has view or modify all";
+                    nonComplianceReason = reason.str();
+                    nonComplianceCode = "ForbiddenObjectAndViewOrModifyAll";
+                    complianceStatus = false;
+                    break;
+                }
                 // search in the user objects
                 if (allPermittedObjects.find(forbiddenobjecttosearch) != allPermittedObjects.end()) {
                     if (forbiddenobjecttosearch.compare("SBQQ__Quote__c") == 0 && hasCPQ) {
